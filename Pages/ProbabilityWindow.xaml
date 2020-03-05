@@ -1,0 +1,15 @@
+﻿<Window x:Class="Courier.ProbabilityWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Courier"
+        mc:Ignorable="d"
+        Title="Вероятность" Height="600" Width="600">
+    <Grid>
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="Black" BorderThickness="2">
+            <Canvas x:Name="ProbabilityCanvas" Width="500" Height="500">
+            </Canvas>
+        </Border>
+    </Grid>
+</Window>
