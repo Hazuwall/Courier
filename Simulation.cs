@@ -33,7 +33,7 @@ namespace Courier
                                 action.Execute(World, obj);
                     }
                 }
-                await Task.Delay(500);
+                await Task.Delay(3000);
             }
         }
     }

@@ -14,7 +14,7 @@ namespace Courier
     {
         private readonly Random _random;
 
-        public double MoveProb { get; set; } = 0.5;
+        public double Translaterob { get; set; } = 0.5;
         public double RotateProb { get; set; } = 0.5;
 
         public WanderStrategy(Random random)
@@ -26,17 +26,17 @@ namespace Courier
         {
             double randVar = _random.NextDouble();
             IWorldAction action = null;
-            if (randVar < MoveProb)
+            if (randVar < Translaterob)
             {
                 if (isClear)
                 {
                     int distance = _random.Next(1, 3);
-                    action = ActionFactory.CreateMoveAction(distance, 0);
+                    action = ActionFactory.CreateTranslationAction(distance, 0);
                 }
                 else
-                    action = ActionFactory.CreateRotateAction(2);
+                    action = ActionFactory.CreateRotateAction(180);
             }
-            else if (randVar - MoveProb < RotateProb)
+            else if (randVar - Translaterob < RotateProb)
             {
                 int angle = _random.Next(0, 2) == 0 ? -90 : 90;
                 action = ActionFactory.CreateRotateAction(angle);

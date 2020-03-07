@@ -6,10 +6,19 @@
         xmlns:local="clr-namespace:Courier"
         mc:Ignorable="d"
         Title="Вероятность" Height="600" Width="600">
-    <Grid>
+    <StackPanel>
         <Border HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="Black" BorderThickness="2">
             <Canvas x:Name="ProbabilityCanvas" Width="500" Height="500">
             </Canvas>
         </Border>
-    </Grid>
+        <Image x:Name="TranslationKernelImage" Width="100" Height="100"
+               RenderTransformOrigin="0.5,0.5"
+               RenderOptions.BitmapScalingMode="NearestNeighbor">
+            <Image.RenderTransform>
+                <RotateTransform Angle="-90"/>
+            </Image.RenderTransform>
+        </Image>
+        <Image x:Name="RotationKernelImage" Width="100" Height="25"
+               RenderOptions.BitmapScalingMode="NearestNeighbor" />
+    </StackPanel>
 </Window>

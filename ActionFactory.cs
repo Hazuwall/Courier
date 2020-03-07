@@ -13,9 +13,9 @@ namespace Courier
             return new MopAction();
         }
 
-        public static MoveAction CreateMoveAction(int distance, int direction, bool exact = true)
+        public static TranslationAction CreateTranslationAction(int distance, int direction, bool exact = true)
         {
-            var action = new MoveAction()
+            var action = new TranslationAction()
             {
                 Distance = distance,
                 Direction = direction,

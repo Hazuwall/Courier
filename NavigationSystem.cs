@@ -8,117 +8,164 @@ namespace Courier
 {
     public class NavigationSystem
     {
-        private struct State
+        public class LocalizationEventArgs : EventArgs
         {
-            public int X;
-            public int Y;
-            public int Z;
-            public int A;
+            public double[,] TranslationKernel { get; set; }
+            public double[] RotationKernel { get; set; }
         }
 
-        private readonly ILookup<string, State> _map;
-        private readonly double[] _tempProbs;
-        
-        public int[] Size { get; }
-        public double[] Belief { get; }
-        public event EventHandler ProbabilityChanged = delegate { };
+        private const string ForbiddenStateLabel = "_Forbidden";
+
+        /// <summary>
+        /// Карта обзора, хранящая информацию о том, на объект какого класса
+        /// падает вид из каждого состояния
+        /// </summary>
+        private readonly int[] _viewMap;
+        /// <summary>
+        /// Карта заполненности, хранящая информацию о том, объект какого класса
+        /// помещён в каждую позицию
+        /// </summary>
+        private readonly int[] _occupancyMap;
+        /// <summary>
+        /// Словарь меток, связывающий мнемонический обозначения с индексами, хранящимися в картах
+        /// </summary>
+        private string[] _mapLabels = null;
+        /// <summary>
+        /// Количество состояний карты обзора с меткой, соответствующей индексу массива
+        /// </summary>
+        private int[] _labelCount = null;
+        private readonly double[] _tempBelief;
+
+        /// <summary>
+        /// Форма мира
+        /// </summary>
+        public int[] WorldShape { get; }
+        /// <summary>
+        /// Убеждение системы о текущем положении
+        /// </summary>
+        public double[] Belief => _belief;
+        private readonly double[] _belief;
+        public event EventHandler<LocalizationEventArgs> ProbabilityChanged = delegate { };
 
         public NavigationSystem(World world)
         {
-            _map = CreateMap(world);
-            Point end = world.UpperBound;
-            Size = new int[] { end.X + 1, end.Y + 1, end.Z + 1, 4 };
-            int length = Size[0] * Size[1] * Size[2] * Size[3];
-            Belief = new double[length];
-            _tempProbs = new double[length];
+            Point upper = world.UpperBound;
+            WorldShape = new int[] { upper.X + 1, upper.Y + 1, upper.Z + 1, 4 };
+
+            int length = WorldShape[0] * WorldShape[1] * WorldShape[2] * WorldShape[3];
+            _belief = new double[length];
+            _tempBelief = new double[length];
+            _viewMap = new int[length];
+            _occupancyMap = new int[length / 4];
+
+            //Инициализация убеждения равномерным распределением
             double uniformProb = 1f / length;
-            for (int i = 0; i < Belief.Length; i++)
-                Belief[i] = uniformProb;
+            for (int i = 0; i < _belief.Length; i++)
+                _belief[i] = uniformProb;
+            FillMaps(world);
         }
 
-        private static ILookup<string, State> CreateMap(World world)
+        /// <summary>
+        /// Заполнить карты обзора и заполнения статическими объектами из данного мира
+        /// </summary>
+        /// <param name="world">Мир с нижней границей в начале координат</param>
+        private void FillMaps(World world)
         {
-            Dictionary<string, List<State>> tempMap = new Dictionary<string, List<State>>();
+            Array.Clear(_occupancyMap, 0, _occupancyMap.Length);
+            Array.Clear(_viewMap, 0, _viewMap.Length);
+            
+            /*Метка пустого класса находится на первом месте в списке,
+            так как карта изначально заполнена нулями*/
+            List<string> mapLabels = new List<string>()
+            {
+                ModelBase.EmptyClassName,
+                ForbiddenStateLabel
+            };
 
-            Point lower = world.LowerBound;
-            Point upper = world.UpperBound;
-            bool[,,] filledMask = new bool[upper.X+1,upper.Y+1,upper.Z+1];
-            List<State> filledList = new List<State>();
+            //Множители при параметрах полного состояния и позиции без ориентации соответственно
+            //Они используются для расчёта индекса соответствующего элемента массива
+            int[] factors = MathHelper.GetOneDimensionalIndexFactors(WorldShape);
+            int[] posFactors = new int[]
+            {
+                factors[0] / 4,
+                factors[1] / 4,
+                1
+            };
 
+            //Занесение всех статических объектов, с которыми можно столкнуться, в карты
             foreach (var obj in world.Objects)
             {
                 ModelBase model = obj.Model;
                 if (model.IsStatic && model.DoCollide)
                 {
-                    Point p = obj.Point;
-                    filledList.Add(new State()
+                    string labelName = model.Class;
+                    int labelIndex = mapLabels.IndexOf(labelName);
+                    if (labelIndex == -1)
                     {
-                        X = p.X,
-                        Y = p.Y,
-                        Z = p.Z
-                    });
-                    filledMask[p.X, p.Y, p.Z] = true;
-
-                    string className = model.Class;
-                    List<State> groupList;
-                    if (!tempMap.TryGetValue(className, out groupList))
-                    {
-                        groupList = new List<State>();
-                        tempMap.Add(className, groupList);
+                        mapLabels.Add(labelName);
+                        labelIndex = mapLabels.Count - 1;
                     }
-                    AddSurroundingToList(groupList, p.X, p.Y, p.Z);
+                    
+                    Point p = obj.Point;
+                    _occupancyMap[p.X * posFactors[0] + p.Y * posFactors[1] + p.Z] = labelIndex;
+                    AddViewsToMap(p.X, p.Y, p.Z, labelIndex,factors);
                 }
             }
 
-            List<State> emptyList = new List<State>();
-            for (int x = 0; x < filledMask.GetLength(0); x++)
-                for (int y = 0; y < filledMask.GetLength(1); y++)
-                    for (int z = 0; z < filledMask.GetLength(2); z++)
-                        if (!filledMask[x, y, z])
-                            AddSurroundingToList(emptyList, x, y, z);    
-            tempMap.Add(ModelBase.EmptyClassName, emptyList);
+            //Занесение пустых позиций в карту обзора
+            for (int i = 0; i < _occupancyMap.Length; i++)
+            {
+                if (_occupancyMap[i] == 0)
+                {
+                    int[] indices = MathHelper.GetMultiDimensionalIndices(i * 4, WorldShape);
+                    AddViewsToMap(indices[0], indices[1], indices[2], 0, factors);
+                }
+            }
 
-            return tempMap
-                .SelectMany(group => group.Value
-                    .Except(filledList)
-                    .Where(loc => (loc.X >= lower.X) && (loc.X <= upper.X) && (loc.Y >= lower.Y) && (loc.Y <= upper.Y))
-                    .Select(loc => new KeyValuePair<string, State>(group.Key, loc)))
-                .ToLookup(pair => pair.Key, pair => pair.Value);
+            //Сохранение словаря меток в виде массива
+            _mapLabels = mapLabels.ToArray();
+            _labelCount = new int[_mapLabels.Length];
+
+            //Пометка всех запрещённых состояний в карте обзора и подсчёт меток
+            int forbiddenIndex = Array.IndexOf(_mapLabels, ForbiddenStateLabel);
+            for (int i = 0; i < _occupancyMap.Length; i++)
+            {
+                if (_occupancyMap[i] != 0)
+                    for (int j = 0; j < 4; j++)
+                        _viewMap[i * 4 + j] = forbiddenIndex;
+                for (int j = 0; j < 4; j++) {
+                    int labelIndex = _viewMap[i * 4 + j];
+                    _labelCount[labelIndex]++;
+                }
+            }
         }
 
-        private static void AddSurroundingToList(List<State> group, int x, int y, int z)
+        /// <summary>
+        /// Добавить окрестность точки в карту обзора
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <param name="labelIndex"></param>
+        /// <param name="factors"></param>
+        private void AddViewsToMap(int x, int y, int z, int labelIndex, int[]factors)
         {
-            group.Add(new State
-            {
-                X = x + 1,
-                Y = y,
-                Z = z,
-                A = 2
-            });
-            group.Add(new State
-            {
-                X = x - 1,
-                Y = y,
-                Z = z,
-                A = 0
-            });
-            group.Add(new State
-            {
-                X = x,
-                Y = y + 1,
-                Z = z,
-                A = 3
-            });
-            group.Add(new State
-            {
-                X = x,
-                Y = y - 1,
-                Z = z,
-                A = 1
-            });
+            x -= 1;
+            if (x >= 0)
+                _viewMap[x * factors[0] + y * factors[1] + z * factors[2]] = labelIndex;
+            x += 2;
+            if (x < WorldShape[0])
+                _viewMap[x * factors[0] + y * factors[1] + z * factors[2] + 2] = labelIndex;
+            x -= 1;
+            y -= 1;
+            if (y >= 0)
+                _viewMap[x * factors[0] + y * factors[1] + z * factors[2] + 1] = labelIndex;
+            y += 2;
+            if (y < WorldShape[1])
+                _viewMap[x * factors[0] + y * factors[1] + z * factors[2] + 3] = labelIndex;
         }
 
-        public static void RecalculateProbs(double[] prior, double[] posterior, int[]size)
+        public static void RecalculateProbs(double[] prior, double[] posterior)
         {
             double sum = 0;
             for (int i = 0; i < prior.Length; i++)
@@ -131,43 +178,118 @@ namespace Courier
                 prior[i] /= sum;
         }
 
-        public void OnMovement(int direction, int distance)
+        public void OnTranslation(int direction, int distance)
         {
-            
+            double[,] gaussianKernel = ProbabilityHelper.Normal2dDistribution(0, 0, 0.3, 0.3);
+
+            int kernelSize = (distance + 1) * 3;
+            if (kernelSize % 2 == 0)
+                kernelSize++;
+            int halfKernel = kernelSize / 2;
+            double[,] directionPdf = new double[kernelSize, kernelSize];
+            double[,] kernel = new double[kernelSize, kernelSize];
+
+            Array.Clear(_tempBelief, 0, _tempBelief.Length);
+            int[] factors = MathHelper.GetOneDimensionalIndexFactors(WorldShape);
+            for (int x = 0; x < WorldShape[0]; x++)
+            {
+                for (int y = 0; y < WorldShape[1]; y++)
+                {
+                    for (int z = 0; z < WorldShape[2]; z++)
+                    {
+                        int index = x * factors[0] + y * factors[1] + z * factors[2];
+                        if (_occupancyMap[index / 4] != 0)
+                            continue;
                         
+                        directionPdf[distance + halfKernel, halfKernel] = _belief[index];
+                        directionPdf[halfKernel, distance + halfKernel] = _belief[index+1];
+                        directionPdf[-distance + halfKernel, halfKernel] = _belief[index+2];
+                        directionPdf[halfKernel, -distance + halfKernel] = _belief[index+3];
+                        var dirVector = MathHelper.GetIntensityVector(_belief[index], _belief[index + 2],
+                            _belief[index + 1], _belief[index + 3]);
+
+                        Array.Clear(kernel, 0, kernel.Length);
+                        MathHelper.Convolution2d(directionPdf, gaussianKernel, kernel);
+                        for (int i = Math.Max(0, halfKernel - x); i < kernel.GetLength(0) && x + i - halfKernel < WorldShape[0]; i++)
+                        {
+                            for (int j = Math.Max(0, halfKernel - y); j < kernel.GetLength(1) && y + j - halfKernel < WorldShape[1]; j++)
+                            {
+                                int localIndex = (x + i - halfKernel) * factors[0] + (y + j - halfKernel) * factors[1] + z * factors[2];
+                                var localDirVector = MathHelper.GetIntensityVector(_belief[localIndex], _belief[localIndex + 2],
+                                    _belief[localIndex + 1], _belief[localIndex + 3]);
+                                for (int a1 = 0; a1 < 4; a1++)
+                                {
+                                    /*for (int a2 = 0; a2 < 4; a2++)
+                                    {
+                                        int sign = Math.Abs(a1 - a2) == 2 ? -1 : 1;
+                                        if (Math.Abs(a1 - a2) == 1)
+                                            continue;*/
+                                        _tempBelief[localIndex + a1] += _belief[index + a1] * kernel[i, j];
+                                    //}
+                                }
+                            }
+                        }
+                            
+                    }
+                }
+            }
+            _tempBelief.CopyTo(_belief, 0);
+            ProbabilityHelper.NormalizePdf(_belief);
+            ProbabilityChanged.Invoke(this, new LocalizationEventArgs() {
+                TranslationKernel = kernel
+            });
         }
 
         public void OnRotation(int angle)
         {
-            Array.Clear(_tempProbs, 0, _tempProbs.Length);
-            int offset = MathHelper.GetOneTurn(angle) / 90;
-            int indexStep = MathHelper.GetIndexFactors(Size)[2];
+            double[] rotationPdf = ProbabilityHelper.NormalDistribution(-angle/90, 0.3);
+            int offset = rotationPdf.Length / 2;
+            double[] kernel = new double[4];
+            for (int i = 0; i < rotationPdf.Length; i++)
+                kernel[MathHelper.GetOneTurn((i-offset)*90) / 90] = rotationPdf[i];
+
             double[] temp = new double[4];
-            for (int i = 0; i < _tempProbs.Length; i += indexStep)
+            for (int i = 0; i < _tempBelief.Length; i += 4)
             {
-                for (int a = 0; a < 4; a++)
-                    temp[a] = _tempProbs[i + a];
-                for (int a = 0; a < 4; a++)
-                    _tempProbs[i + (a + offset) % 4] = temp[a];
+                if (_occupancyMap[i/4] != 0)
+                    continue;
+
+                MathHelper.CircularConvolution(i, _belief, kernel, temp);
+                for (int j = 0; j < 4; j++)
+                    _belief[i + j] = temp[j];
             }
-            ProbabilityChanged.Invoke(this, new EventArgs());
+            ProbabilityHelper.NormalizePdf(_belief);
+            ProbabilityChanged.Invoke(this, new LocalizationEventArgs()
+            {
+                RotationKernel = kernel
+            });
         }
 
-        public void OnMeasurement(Dictionary<string,double> probs)
+        public void OnMeasurement(Dictionary<string,double> prediction)
         {
-            Array.Clear(_tempProbs,0,_tempProbs.Length);
-            int[] factors = MathHelper.GetIndexFactors(Size);
-            foreach (var classProb in probs)
+            double[] probs = PredictionToProbabilities(prediction);
+
+            Array.Clear(_tempBelief,0,_tempBelief.Length);
+            for(int i=0;i<_viewMap.Length;i++)
             {
-                var locations = _map[classProb.Key];
-                int count = locations.Count();
-                foreach (var loc in locations)
-                {
-                    _tempProbs[loc.X * factors[0] + loc.Y * factors[1] + loc.Z * factors[2] + loc.A] += classProb.Value / count;
-                }
+                int labelIndex = _viewMap[i];
+                _tempBelief[i] = probs[labelIndex] / _labelCount[labelIndex];
             }
-            RecalculateProbs(Belief, _tempProbs, Size);
-            ProbabilityChanged.Invoke(this, new EventArgs());
+
+            RecalculateProbs(_belief, _tempBelief);
+            ProbabilityChanged.Invoke(this, new LocalizationEventArgs());
+        }
+
+        private double[] PredictionToProbabilities(Dictionary<string, double> prediction)
+        {
+            double[] probs = new double[_mapLabels.Length];
+            foreach(var item in prediction)
+            {
+                int labelIndex = Array.IndexOf(_mapLabels, item.Key);
+                if(labelIndex != -1)
+                    probs[labelIndex] = item.Value;
+            }
+            return probs;
         }
     }
 }

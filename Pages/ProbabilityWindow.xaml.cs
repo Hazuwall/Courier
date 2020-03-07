@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,9 +29,9 @@ namespace Courier
             _navigation.ProbabilityChanged += Navigation_ProbabilityChanged;
 
             Brush brush = new SolidColorBrush(Colors.Blue);
-            for (int x = 0; x < _navigation.Size[0]; x++)
+            for (int x = 0; x < _navigation.WorldShape[0]; x++)
             {
-                for (int y = _navigation.Size[1]-1; y>=0; y--)
+                for (int y = _navigation.WorldShape[1]-1; y>=0; y--)
                 {
                     for (int a = 0; a < 360; a += 90)
                     {
@@ -40,10 +41,23 @@ namespace Courier
                             Fill = brush,
                             Stroke = new SolidColorBrush(Colors.Black)
                         };
-                        //Canvas.SetLeft(triangle, x * ElementSize + ElementSize / 2);
-                        //Canvas.SetBottom(triangle, y * ElementSize + ElementSize / 2);
                         ProbabilityCanvas.Children.Add(triangle);
                     }
+                }
+            }
+            for (int x = 0; x < _navigation.WorldShape[0]; x++)
+            {
+                for (int y = _navigation.WorldShape[1] - 1; y >= 0; y--)
+                {
+                    Ellipse centerCircle = new Ellipse()
+                    {
+                        Fill = new SolidColorBrush(Colors.Azure),
+                        Height = ElementSize / 5,
+                        Width = ElementSize / 5
+                    };
+                    Canvas.SetLeft(centerCircle, x * ElementSize + 0.4 * ElementSize);
+                    Canvas.SetBottom(centerCircle, y * ElementSize + 0.4 * ElementSize);
+                    ProbabilityCanvas.Children.Add(centerCircle);
                 }
             }
         }
@@ -74,15 +88,32 @@ namespace Courier
             return new PointCollection(points);
         }
 
-        private void Navigation_ProbabilityChanged(object sender, EventArgs e)
+        private void Navigation_ProbabilityChanged(object sender, NavigationSystem.LocalizationEventArgs e)
         {
-            int indexStep = MathHelper.GetIndexFactors(_navigation.Size)[1];
-            double max = _navigation.Belief.Max();
+            int indexStep = MathHelper.GetOneDimensionalIndexFactors(_navigation.WorldShape)[1];
             var items = ProbabilityCanvas.Children;
-            int positionCount = items.Count / 4;
+            var belief = _navigation.Belief;
+            int positionCount = belief.Length / indexStep;
+            double max = belief.Max();
             for (int i = 0; i < positionCount; i++)
                 for(int a=0;a<4;a++)
-                    items[i*4 + a].Opacity = Math.Pow(_navigation.Belief[indexStep * i + a] / max, 0.1);
+                    items[i*4 + a].Opacity = Math.Pow(belief[indexStep * i + a] / max, 0.1);
+
+            double[,] tKernel = e.TranslationKernel;
+            if (tKernel != null)
+            {
+                byte[] bytes = DrawingHelper.ArrayToImageData(tKernel);
+                TranslationKernelImage.Source = DrawingHelper.ToImageSource(bytes,
+                    tKernel.GetLength(1),
+                    tKernel.GetLength(0));
+            }
+            double[] rKernel = e.RotationKernel;
+            if (rKernel != null)
+            {
+                byte[] bytes = DrawingHelper.ArrayToImageData(rKernel);
+                RotationKernelImage.Source = DrawingHelper.ToImageSource(bytes,
+                    rKernel.Length, 1);
+            }
         }
     }
 }

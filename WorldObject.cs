@@ -60,7 +60,7 @@ namespace Courier
                 Width = ObjectSize,
                 Height = ObjectSize,
                 Source = new BitmapImage(imageUri),
-                RenderTransform = new RotateTransform(270 - orientation, ObjectSize/2, ObjectSize/2)
+                RenderTransform = new RotateTransform(270-orientation, ObjectSize/2, ObjectSize/2)
             };
             Canvas.SetLeft(view, point.X * ObjectSize + ObjectSize / 2);
             Canvas.SetBottom(view, point.Y * ObjectSize + ObjectSize / 2);

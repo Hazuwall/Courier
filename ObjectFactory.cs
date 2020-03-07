@@ -52,7 +52,7 @@ namespace Courier
         public WorldObject CreateDeskObj(World world, Point point)
         {
             var model = new Desk();
-            var obj = new WorldObject(model, point);
+            var obj = new WorldObject(model, point, -90);
             return obj;
         }
 
@@ -70,7 +70,7 @@ namespace Courier
             var navSystem = new NavigationSystem(world);
             var behavior = new WanderStrategy(_random)
             {
-                MoveProb = 0.5,
+                Translaterob = 0.5,
                 RotateProb = 0.25
             };
             var model = new Robot(camera, navSystem, behavior);
@@ -84,7 +84,7 @@ namespace Courier
             var camera = _walkerCamera ?? InitializeWalkerCamera(world);
             var behavior = new WanderStrategy(_random)
             {
-                MoveProb = 0.7,
+                Translaterob = 0.7,
                 RotateProb = 0.2
             };
             var model = isCleaner ? new Cleaner(camera, behavior) : new Walker(camera, behavior);
@@ -96,7 +96,7 @@ namespace Courier
         public WorldObject CreateWallObj(World world, Point point)
         {
             var model = new Wall();
-            var obj = new WorldObject(model, point);
+            var obj = new WorldObject(model, point, -90);
             return obj;
         }
 

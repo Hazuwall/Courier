@@ -35,7 +35,7 @@ namespace Courier
 
         public WorldGenerator GenerateFurniture()
         {
-            //var obj = Factory.CreateDeskObj(World, new Point(6, 7, 0));
+            var obj = Factory.CreateDeskObj(World, new Point(6, 7, 0));
             //World.Objects.Add(obj);
             return this;
         }

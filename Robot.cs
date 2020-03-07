@@ -29,8 +29,10 @@ namespace Courier
             var probs = _camera.Measure(this, 0);
             NavigationSystem.OnMeasurement(probs);
             var action = _strategy.GetAction(probs[EmptyClassName] > 0.7);
-            if (action is MoveAction)
-                return null;
+            if (action is TranslationAction) {
+                var translation = action as TranslationAction;
+                NavigationSystem.OnTranslation(translation.Direction, translation.Distance);
+            }
             else if (action is RotateAction)
                 NavigationSystem.OnRotation((action as RotateAction).Angle);
             
