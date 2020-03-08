@@ -26,15 +26,10 @@ namespace Courier
         {
             double randVar = _random.NextDouble();
             IWorldAction action = null;
-            if (randVar < Translaterob)
+            if (randVar < Translaterob && isClear)
             {
-                if (isClear)
-                {
-                    int distance = _random.Next(1, 3);
-                    action = ActionFactory.CreateTranslationAction(distance, 0);
-                }
-                else
-                    action = ActionFactory.CreateRotateAction(180);
+                int distance = _random.Next(1, 3);
+                action = ActionFactory.CreateTranslationAction(distance, 0);
             }
             else if (randVar - Translaterob < RotateProb)
             {

@@ -48,7 +48,7 @@ namespace Courier
             _point = point;
             _orientation = orientation;
         }
-        public WorldObject(ModelBase model, Point point) : this(model, point, 0)
+        public WorldObject(ModelBase model, Point point) : this(model, point, -90)
         {
         }
 

@@ -5,11 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Courier"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="600">
+        Title="Робот-курьер" Height="600" Width="600">
     <Grid>
-        <TextBlock x:Name="TextBlock" Text="Text"/>
-        <Button Click="Button_Click" Width="100" Height="20"/>
-        <Canvas x:Name="FloorCanvas" Width="500" Height="500">
-        </Canvas>
+        <Menu Height="25" VerticalAlignment="Top">
+            <MenuItem Header="Симуляция">
+                <MenuItem Header="Начать новую" Command="{Binding NewSimCommand}"/>
+                <MenuItem Header="Продолжить" Command="{Binding ContinueSimCommand}"/>
+                <MenuItem Header="Остановить" Command="{Binding StopSimCommand}"/>
+            </MenuItem>
+        </Menu>
+        <ItemsControl ItemsSource="{Binding WorldObjects}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas Width="500" Height="500"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
     </Grid>
 </Window>

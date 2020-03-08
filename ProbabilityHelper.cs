@@ -100,8 +100,25 @@ namespace Courier
         public static void NormalizePdf(double[] pdf)
         {
             double sum = pdf.Sum();
-            for (int i = 0; i < pdf.Length; i++)
-                pdf[i] /= sum;
+            NormalizePdf(pdf, sum);
+        }
+        public static void NormalizePdf(double[] pdf, double sum)
+        {
+            if (sum < double.Epsilon * 100 || double.IsNaN(sum))
+                SetUniformDistribution(pdf);
+            else
+                for (int i = 0; i < pdf.Length; i++)
+                {
+                    double p = pdf[i] / sum;
+                    pdf[i] = p > 0.000000000001 ? p : 0.000000000001;
+                }
+        }
+
+        public static void SetUniformDistribution(double[] output)
+        {
+            double uniformProb = 1f / output.Length;
+            for (int i = 0; i < output.Length; i++)
+                output[i] = uniformProb;
         }
     }
 }

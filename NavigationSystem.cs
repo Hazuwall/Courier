@@ -35,6 +35,7 @@ namespace Courier
         /// </summary>
         private int[] _labelCount = null;
         private readonly double[] _tempBelief;
+        private readonly double[] _gaussianKernel;
 
         /// <summary>
         /// Форма мира
@@ -54,14 +55,14 @@ namespace Courier
 
             int length = WorldShape[0] * WorldShape[1] * WorldShape[2] * WorldShape[3];
             _belief = new double[length];
-            _tempBelief = new double[length];
             _viewMap = new int[length];
             _occupancyMap = new int[length / 4];
 
+            _tempBelief = new double[length];
+            _gaussianKernel = ProbabilityHelper.NormalDistribution(0, 0.25);
+
             //Инициализация убеждения равномерным распределением
-            double uniformProb = 1f / length;
-            for (int i = 0; i < _belief.Length; i++)
-                _belief[i] = uniformProb;
+            ProbabilityHelper.SetUniformDistribution(_belief);
             FillMaps(world);
         }
 
@@ -174,20 +175,17 @@ namespace Courier
                 prior[i] = prob;
                 sum += prob;
             }
-            for (int i = 0; i < prior.Length; i++)
-                prior[i] /= sum;
+            ProbabilityHelper.NormalizePdf(prior, sum);
         }
 
         public void OnTranslation(int direction, int distance)
         {
-            double[,] gaussianKernel = ProbabilityHelper.Normal2dDistribution(0, 0, 0.3, 0.3);
-
             int kernelSize = (distance + 1) * 3;
             if (kernelSize % 2 == 0)
                 kernelSize++;
             int halfKernel = kernelSize / 2;
-            double[,] directionPdf = new double[kernelSize, kernelSize];
-            double[,] kernel = new double[kernelSize, kernelSize];
+            double[,] tempKernel = new double[kernelSize, 2];
+            double[,] kernel = new double[kernelSize, 2];
 
             Array.Clear(_tempBelief, 0, _tempBelief.Length);
             int[] factors = MathHelper.GetOneDimensionalIndexFactors(WorldShape);
@@ -200,49 +198,50 @@ namespace Courier
                         int index = x * factors[0] + y * factors[1] + z * factors[2];
                         if (_occupancyMap[index / 4] != 0)
                             continue;
-                        
-                        directionPdf[distance + halfKernel, halfKernel] = _belief[index];
-                        directionPdf[halfKernel, distance + halfKernel] = _belief[index+1];
-                        directionPdf[-distance + halfKernel, halfKernel] = _belief[index+2];
-                        directionPdf[halfKernel, -distance + halfKernel] = _belief[index+3];
-                        var dirVector = MathHelper.GetIntensityVector(_belief[index], _belief[index + 2],
-                            _belief[index + 1], _belief[index + 3]);
 
-                        Array.Clear(kernel, 0, kernel.Length);
-                        MathHelper.Convolution2d(directionPdf, gaussianKernel, kernel);
+                        ComputeTranslationKernel(index, distance, tempKernel, kernel);
+
                         for (int i = Math.Max(0, halfKernel - x); i < kernel.GetLength(0) && x + i - halfKernel < WorldShape[0]; i++)
                         {
-                            for (int j = Math.Max(0, halfKernel - y); j < kernel.GetLength(1) && y + j - halfKernel < WorldShape[1]; j++)
-                            {
-                                int localIndex = (x + i - halfKernel) * factors[0] + (y + j - halfKernel) * factors[1] + z * factors[2];
-                                var localDirVector = MathHelper.GetIntensityVector(_belief[localIndex], _belief[localIndex + 2],
-                                    _belief[localIndex + 1], _belief[localIndex + 3]);
-                                for (int a1 = 0; a1 < 4; a1++)
-                                {
-                                    /*for (int a2 = 0; a2 < 4; a2++)
-                                    {
-                                        int sign = Math.Abs(a1 - a2) == 2 ? -1 : 1;
-                                        if (Math.Abs(a1 - a2) == 1)
-                                            continue;*/
-                                        _tempBelief[localIndex + a1] += _belief[index + a1] * kernel[i, j];
-                                    //}
-                                }
-                            }
+                            int localIndex = (x + i - halfKernel) * factors[0] + y * factors[1] + z * factors[2];
+                            if (_occupancyMap[localIndex / 4] != 0)
+                                continue;
+                            int a = i < halfKernel ? 2 : 0;
+
+                            _tempBelief[localIndex + a] += _belief[index + a] * kernel[i, 0];
                         }
-                            
+                        for (int i = Math.Max(0, halfKernel - y); i < kernel.GetLength(0) && y + i - halfKernel < WorldShape[1]; i++)
+                        {
+                            int localIndex = x * factors[0] + (y + i - halfKernel) * factors[1] + z * factors[2];
+                            if (_occupancyMap[localIndex / 4] != 0)
+                                continue;
+                            int a = i < halfKernel ? 3 : 1;
+
+                            _tempBelief[localIndex + a] += _belief[index + a] * kernel[i, 1];
+                        }
                     }
                 }
             }
             _tempBelief.CopyTo(_belief, 0);
-            ProbabilityHelper.NormalizePdf(_belief);
+            //ProbabilityHelper.NormalizePdf(_belief);
             ProbabilityChanged.Invoke(this, new LocalizationEventArgs() {
                 TranslationKernel = kernel
             });
         }
 
+        private void ComputeTranslationKernel(int posIndex, int distance, double[,] temp, double[,] output)
+        {
+            int half = output.Length / 4;
+            temp[distance + half, 0] = _belief[posIndex];
+            temp[-distance + half, 0] = _belief[posIndex + 2];
+            temp[distance + half, 1] = _belief[posIndex + 1];
+            temp[-distance + half, 1] = _belief[posIndex + 3];
+            MathHelper.Convolution2d(temp, _gaussianKernel, output);
+        }
+
         public void OnRotation(int angle)
         {
-            double[] rotationPdf = ProbabilityHelper.NormalDistribution(-angle/90, 0.3);
+            double[] rotationPdf = ProbabilityHelper.NormalDistribution(angle/90, 0.25);
             int offset = rotationPdf.Length / 2;
             double[] kernel = new double[4];
             for (int i = 0; i < rotationPdf.Length; i++)
@@ -254,26 +253,30 @@ namespace Courier
                 if (_occupancyMap[i/4] != 0)
                     continue;
 
-                MathHelper.CircularConvolution(i, _belief, kernel, temp);
-                for (int j = 0; j < 4; j++)
-                    _belief[i + j] = temp[j];
+                MathHelper.TransposedCircularConvolution(i, _belief, kernel, temp);
+                for (int a = 0; a < 4; a++)
+                    _belief[i + a] = temp[a];
             }
-            ProbabilityHelper.NormalizePdf(_belief);
+            //ProbabilityHelper.NormalizePdf(_belief);
             ProbabilityChanged.Invoke(this, new LocalizationEventArgs()
             {
                 RotationKernel = kernel
             });
         }
 
-        public void OnMeasurement(Dictionary<string,double> prediction)
+        public void OnMeasurement(Dictionary<string,double> prediction, int oneTurnDirection)
         {
             double[] probs = PredictionToProbabilities(prediction);
+            int offset = oneTurnDirection / 90;
 
             Array.Clear(_tempBelief,0,_tempBelief.Length);
-            for(int i=0;i<_viewMap.Length;i++)
+            for(int i=0;i<_viewMap.Length;i+=4)
             {
-                int labelIndex = _viewMap[i];
-                _tempBelief[i] = probs[labelIndex] / _labelCount[labelIndex];
+                for (int a = 0; a < 4; a++)
+                {
+                    int labelIndex = _viewMap[i + ((a+offset)%4)];
+                    _tempBelief[i+a] = probs[labelIndex] / _labelCount[labelIndex];
+                }
             }
 
             RecalculateProbs(_belief, _tempBelief);
@@ -286,8 +289,10 @@ namespace Courier
             foreach(var item in prediction)
             {
                 int labelIndex = Array.IndexOf(_mapLabels, item.Key);
-                if(labelIndex != -1)
+                if (labelIndex != -1)
                     probs[labelIndex] = item.Value;
+                else
+                    probs[0] = item.Value;
             }
             return probs;
         }

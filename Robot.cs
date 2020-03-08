@@ -26,8 +26,10 @@ namespace Courier
 
         public override IEnumerable<IWorldAction> Call()
         {
-            var probs = _camera.Measure(this, 0);
-            NavigationSystem.OnMeasurement(probs);
+            var probs = _camera.Measure(this, 180);
+            NavigationSystem.OnMeasurement(probs, 180);
+            probs = _camera.Measure(this, 0);
+            NavigationSystem.OnMeasurement(probs, 0);
             var action = _strategy.GetAction(probs[EmptyClassName] > 0.7);
             if (action is TranslationAction) {
                 var translation = action as TranslationAction;

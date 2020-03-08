@@ -19,7 +19,7 @@ namespace Courier
 
         public bool Execute(World world, WorldObject obj)
         {
-            if (obj != null && world.IsNearby(obj.Point, Lift.ClassName))
+            /*if (obj != null && world.IsNearby(obj.Point, Lift.ClassName))
             {
                 var oldPoint = obj.Point;
                 double rand = new Random().NextDouble();
@@ -32,7 +32,7 @@ namespace Courier
                         return true;
                     }
                 }
-            }
+            }*/
             return false;
         }
     }

@@ -8,41 +8,21 @@ namespace Courier
 {
     public class StaticModel : ModelBase
     {
+        public const string DeskClassName = "Desk";
+        public const string ElevatorClassName = "Elevator";
+        public const string PlantClassName = "Plant";
+        public const string WallClassName = "Wall";
+        public const string WindowClassName = "Window";
+
         public override bool DoCollide => true;
         public override bool IsCallable => false;
         public override bool IsStatic => true;
-        public override string Class => "Static";
-    }
+        public override string Class => _className;
+        private readonly string _className;
 
-    public class Desk : StaticModel
-    {
-        public const string ClassName = "Desk";
-        public override string Class => ClassName;
-    }
-
-    public class Plant : StaticModel
-    {
-        public const string ClassName = "Plant";
-        public override string Class => ClassName;
-    }
-
-    public class Lift : StaticModel
-    {
-        public const string ClassName = "Lift";
-
-        public override string Class => ClassName;
-
-    }
-
-    public class Window : StaticModel
-    {
-        public const string ClassName = "Window";
-        public override string Class => ClassName;
-    }
-
-    public class Wall : StaticModel
-    {
-        public const string ClassName = "Wall";
-        public override string Class => ClassName;
+        public StaticModel(string className)
+        {
+            _className = className;
+        }
     }
 }

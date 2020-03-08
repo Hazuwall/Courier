@@ -84,25 +84,22 @@ namespace Courier
         /// <param name="vector">Вектор, над которым производится операция</param>
         /// <param name="kernel">Ядро свёртки, длина которого соответствует длине обрабатываемой части вектора</param>
         /// <param name="output">Выходной вектор, длина которого равна длине ядра</param>
-        public static void CircularConvolution(int startIndex, double[] vector, double[] kernel, double[] output)
+        public static void TransposedCircularConvolution(int startIndex, double[] vector, double[] kernel, double[] output)
         {
-            for (int i = 0; i < output.Length; i++)
-            {
-                output[i] = 0;
+            Array.Clear(output, 0, output.Length);
+            for (int i = 0; i < kernel.Length; i++)
                 for (int j = 0; j < kernel.Length; j++)
-                    output[i] += vector[startIndex + (j + i) % kernel.Length] * kernel[j];
-            }
+                    output[(j + i) % kernel.Length] += vector[startIndex + i] * kernel[j];
         }
 
-        public static void Convolution2d(double[,] A, double[,] kernel, double[,] output)
+        public static void Convolution2d(double[,] A, double[] kernel, double[,] output)
         {
-            int k1 = kernel.GetLength(0)/2;
-            int k2 = kernel.GetLength(1)/2;
+            Array.Clear(output, 0, output.Length);
+            int half = kernel.Length / 2;
             for (int x = 0; x < output.GetLength(0); x++)
                 for (int y = 0; y < output.GetLength(1); y++)
-                    for (int i = Math.Max(0, k1 - x); i < kernel.GetLength(0) && x + i - k1 < A.GetLength(0); i++)
-                        for (int j = Math.Max(0, k2 - y); j < kernel.GetLength(1) && y + j - k2 < A.GetLength(1); j++)
-                            output[x, y] += A[x + i - k1, y + j - k2] * kernel[i, j];
+                    for (int i = Math.Max(0, half - x); i < kernel.Length && x + i - half < A.GetLength(0); i++)
+                            output[x, y] += A[x + i - half, y] * kernel[i];
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
@@ -10,31 +11,34 @@ namespace Courier
     public class Simulation
     {
         public World World { get; }
-        public Canvas Canvas { get; }
+        public int DelayTime { get; set; } = 3000;
 
         public Simulation(World world)
         {
             World = world;
         }
 
-        public async Task SimulateAsync()
+        public async Task SimulateAsync(CancellationToken token)
         {
-            for (int t = 0; t < 1000; t++)
+            while (!token.IsCancellationRequested)
+                await StepAsync();
+        }
+
+        public async Task StepAsync()
+        {
+            var objects = World.Objects;
+            for (int i = 0; i < objects.Count; i++)
             {
-                var objects = World.Objects;
-                for (int i = 0; i < objects.Count; i++)
+                var obj = objects[i];
+                if (obj.Model.IsCallable)
                 {
-                    var obj = objects[i];
-                    if (obj.Model.IsCallable)
-                    {
-                        var actions = obj.Model.Call();
-                        if (actions != null)
-                            foreach (var action in actions)
-                                action.Execute(World, obj);
-                    }
+                    var actions = obj.Model.Call();
+                    if (actions != null)
+                        foreach (var action in actions)
+                            action.Execute(World, obj);
                 }
-                await Task.Delay(3000);
             }
+            await Task.Delay(DelayTime);
         }
     }
 }

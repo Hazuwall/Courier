@@ -19,18 +19,24 @@ namespace Courier
         {
             string[] classes = new string[] {
                 Person.ClassName,
-                Wall.ClassName,
-                Desk.ClassName,
+                StaticModel.DeskClassName,
+                StaticModel.ElevatorClassName,
+                StaticModel.PlantClassName,
+                StaticModel.WallClassName,
+                StaticModel.WindowClassName,
                 ModelBase.EmptyClassName,
                 ModelBase.UnknownClassName
             };
             double[,] confusion = new double[,]
             {
-                { 0.8, 0.05, 0.05, 0.05, 0.05 },
-                { 0.05, 0.8, 0.05, 0.05, 0.05 },
-                { 0.05, 0.05, 0.8, 0.05, 0.05 },
-                { 0.05, 0.05, 0.05, 0.8, 0.05 },
-                { 0.05, 0.05, 0.05, 0.05, 0.8 }
+                { 0.9, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01 },
+                { 0.01, 0.9, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01 },
+                { 0.01, 0.01, 0.9, 0.01, 0.01, 0.01, 0.01, 0.01 },
+                { 0.01, 0.01, 0.01, 0.9, 0.01, 0.01, 0.01, 0.01 },
+                { 0.01, 0.01, 0.01, 0.01, 0.9, 0.01, 0.01, 0.01 },
+                { 0.01, 0.01, 0.01, 0.01, 0.01, 0.9, 0.01, 0.01 },
+                { 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.9, 0.01 },
+                { 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.9 }
             };
             return _robotCamera = new Camera(world, classes, confusion);
         }
@@ -49,10 +55,17 @@ namespace Courier
             return _walkerCamera = new Camera(world, classes, confusion);
         }
 
-        public WorldObject CreateDeskObj(World world, Point point)
+        public WorldObject CreateDeskObj(Point point)
         {
-            var model = new Desk();
+            var model = new StaticModel(StaticModel.DeskClassName);
             var obj = new WorldObject(model, point, -90);
+            return obj;
+        }
+
+        public WorldObject CreateElevatorObj(Point point)
+        {
+            var model = new StaticModel(StaticModel.ElevatorClassName);
+            var obj = new WorldObject(model, point);
             return obj;
         }
 
@@ -60,6 +73,13 @@ namespace Courier
         public WorldObject CreatePersonObj(Point point)
         {
             var model = new Person();
+            var obj = new WorldObject(model, point);
+            return obj;
+        }
+
+        public WorldObject CreatePlantObj(Point point)
+        {
+            var model = new StaticModel(StaticModel.PlantClassName);
             var obj = new WorldObject(model, point);
             return obj;
         }
@@ -93,10 +113,17 @@ namespace Courier
             return obj;
         }
 
-        public WorldObject CreateWallObj(World world, Point point)
+        public WorldObject CreateWallObj(Point point)
         {
-            var model = new Wall();
-            var obj = new WorldObject(model, point, -90);
+            var model = new StaticModel(StaticModel.WallClassName);
+            var obj = new WorldObject(model, point);
+            return obj;
+        }
+
+        public WorldObject CreateWindowObj(Point point)
+        {
+            var model = new StaticModel(StaticModel.WindowClassName);
+            var obj = new WorldObject(model, point);
             return obj;
         }
 
