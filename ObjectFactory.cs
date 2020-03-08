@@ -12,8 +12,14 @@ namespace Courier
     public class ObjectFactory
     {
         private readonly Random _random = new Random();
+        private readonly double _size;
         private Camera _robotCamera = null;
         private Camera _walkerCamera = null;
+
+        public ObjectFactory(double size)
+        {
+            _size = size;
+        }
 
         private Camera InitializeRobotCamera(World world)
         {
@@ -58,14 +64,14 @@ namespace Courier
         public WorldObject CreateDeskObj(Point point)
         {
             var model = new StaticModel(StaticModel.DeskClassName);
-            var obj = new WorldObject(model, point, -90);
+            var obj = new WorldObject(model, _size, point, -90);
             return obj;
         }
 
         public WorldObject CreateElevatorObj(Point point)
         {
             var model = new StaticModel(StaticModel.ElevatorClassName);
-            var obj = new WorldObject(model, point);
+            var obj = new WorldObject(model, _size, point);
             return obj;
         }
 
@@ -73,29 +79,35 @@ namespace Courier
         public WorldObject CreatePersonObj(Point point)
         {
             var model = new Person();
-            var obj = new WorldObject(model, point);
+            var obj = new WorldObject(model, _size, point);
             return obj;
         }
 
         public WorldObject CreatePlantObj(Point point)
         {
             var model = new StaticModel(StaticModel.PlantClassName);
-            var obj = new WorldObject(model, point);
+            var obj = new WorldObject(model, _size, point);
             return obj;
         }
 
         public WorldObject CreateRobotObj(World world, Point point)
         {
             var camera = _robotCamera ?? InitializeRobotCamera(world);
-            var navSystem = new NavigationSystem(world);
+            var navSystem = new NavigationSystem(world)
+            {
+                RotationStd = 0.3,
+                TranslationStd = 0.3
+            };
             var behavior = new WanderStrategy(_random)
             {
-                Translaterob = 0.5,
-                RotateProb = 0.25
+                ElevatorProb = 0.75,
+                TranslateProb = 0.7,
+                RotateProb = 0.2,
+                IsExact = false
             };
             var model = new Robot(camera, navSystem, behavior);
             int orientation = _random.Next(0, 4) * 90;
-            var obj = new WorldObject(model, point, orientation);
+            var obj = new WorldObject(model, _size, point, orientation);
             return obj;
         }
 
@@ -104,34 +116,36 @@ namespace Courier
             var camera = _walkerCamera ?? InitializeWalkerCamera(world);
             var behavior = new WanderStrategy(_random)
             {
-                Translaterob = 0.7,
-                RotateProb = 0.2
+                ElevatorProb = 0,
+                TranslateProb = 0.8,
+                RotateProb = 0.1,
+                IsExact = true
             };
             var model = isCleaner ? new Cleaner(camera, behavior) : new Walker(camera, behavior);
             int orientation = _random.Next(0, 4) * 90;
-            var obj = new WorldObject(model, point, orientation);
+            var obj = new WorldObject(model, _size, point, orientation);
             return obj;
         }
 
         public WorldObject CreateWallObj(Point point)
         {
             var model = new StaticModel(StaticModel.WallClassName);
-            var obj = new WorldObject(model, point);
+            var obj = new WorldObject(model, _size, point);
             return obj;
         }
 
         public WorldObject CreateWindowObj(Point point)
         {
             var model = new StaticModel(StaticModel.WindowClassName);
-            var obj = new WorldObject(model, point);
+            var obj = new WorldObject(model, _size, point);
             return obj;
         }
 
-        public WorldObject CreateWetFloorObj(Point point)
+        public WorldObject CreateWetFloorObj(Point point, int orientation=0)
         {
-            int wetness = _random.Next(3, 15);
+            int wetness = _random.Next(3, 20);
             var model = new WetFloor(wetness);
-            var obj = new WorldObject(model, point);
+            var obj = new WorldObject(model, _size, point, orientation);
             return obj;
         }
     }

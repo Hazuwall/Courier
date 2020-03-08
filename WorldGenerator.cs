@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,7 +12,10 @@ namespace Courier
 {
     public class WorldGenerator
     {
-        public ObjectFactory Factory { get; }
+        private readonly double _canvasSize;
+
+        public ObjectFactory Factory => _factory;
+        private ObjectFactory _factory = null;
 
         public World World => _world;
         private World _world = null;
@@ -16,20 +23,23 @@ namespace Courier
         public Robot Robot => _robot;
         private Robot _robot = null;
 
-        public WorldGenerator()
+        public WorldGenerator(double canvasSize)
         {
-            Factory = new ObjectFactory();
+            _canvasSize = canvasSize;
         }
 
-        public World Generate(char[,,] map)
+        public World Generate(string[,,] map, Collection<WorldObject> objectCollection)
         {
+            _factory = new ObjectFactory(_canvasSize / map.GetLength(2));
+
             World world = new World(new Point(0, 0, 0),
                 new Point(map.GetLength(2) - 1, map.GetLength(1) - 1, map.GetLength(0) - 1),
-                new List<WorldObject>());
+                objectCollection);
 
             WorldObject obj = null;
             Point point;
             bool isStatic;
+            char code;
             Dictionary<Point, char> npcDictionary = new Dictionary<Point, char>();
             for (int z = 0; z < map.GetLength(0); z++)
             {
@@ -39,28 +49,29 @@ namespace Courier
                     {
                         point = new Point(x, map.GetLength(1) - y - 1, z);
                         isStatic = true;
-                        switch (map[z, y, x])
+                        code = map[z, y, x][0];
+                        switch (code)
                         {
                             case 'w':
-                                obj = Factory.CreateWallObj(point);
+                                obj = _factory.CreateWallObj(point);
                                 break;
                             case 'f':
-                                obj = Factory.CreateWindowObj(point);
+                                obj = _factory.CreateWindowObj(point);
                                 break;
                             case 'p':
-                                obj = Factory.CreatePlantObj(point);
+                                obj = _factory.CreatePlantObj(point);
                                 break;
                             case 'e':
-                                obj = Factory.CreateElevatorObj(point);
+                                obj = _factory.CreateElevatorObj(point);
                                 break;
                             case 'd':
-                                obj = Factory.CreateDeskObj(point);
+                                obj = _factory.CreateDeskObj(point);
                                 break;
                             case ' ':
                                 isStatic = false;
                                 break;
                             default:
-                                npcDictionary.Add(point, map[z, y, x]);
+                                npcDictionary.Add(point, code);
                                 isStatic = false;
                                 break;
                         }
@@ -75,40 +86,30 @@ namespace Courier
                 switch (npcInfo.Value)
                 {
                     case 'M':
-                        obj = Factory.CreatePersonObj(npcInfo.Key);
+                        obj = _factory.CreatePersonObj(npcInfo.Key);
                         break;
                     case 'W':
-                        obj = Factory.CreateWalkerObj(world, npcInfo.Key);
+                        obj = _factory.CreateWalkerObj(world, npcInfo.Key);
                         break;
                     case 'C':
-                        obj = Factory.CreateWalkerObj(world, npcInfo.Key, isCleaner: true);
+                        obj = _factory.CreateWalkerObj(world, npcInfo.Key, isCleaner: true);
                         break;
                     case 'R':
-                        obj = Factory.CreateRobotObj(world, npcInfo.Key);
+                        obj = _factory.CreateRobotObj(world, npcInfo.Key);
                         _robot = obj.Model as Robot;
                         break;
+                    default:
+                        continue;
                 }
                 world.Objects.Add(obj);
             }
             return _world = world;
         }
 
-        public static char[,,] GetDefaultMap()
+        public static string[,,] ParseMapFromJson(string path)
         {
-            return new char[,,]
-            {
-                {
-                    { 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w', 'w' },
-                    { 'w', ' ', ' ', ' ', ' ', 'p', ' ', 'M', 'w' },
-                    { 'w', 'M', ' ', ' ', ' ', ' ', ' ', 'd', 'w' },
-                    { 'p', 'd', ' ', 'p', 'p', 'p', ' ', ' ', 'e' },
-                    { 'w', ' ', ' ', ' ', 'W', ' ', ' ', ' ', 'w' },
-                    { 'p', ' ', ' ', 'p', 'p', 'p', ' ', ' ', 'w' },
-                    { 'w', ' ', 'R', ' ', ' ', ' ', ' ', ' ', 'w' },
-                    { 'w', ' ', ' ', ' ', 'p', ' ', ' ', 'C', 'w' },
-                    { 'w', 'f', 'w', 'f', 'w', 'f', 'w', 'f', 'w' }
-                }
-            };
+            string rawJson = File.ReadAllText(path);
+            return (string[,,])JsonConvert.DeserializeObject(rawJson, typeof(string[,,]));
         }
     }
 }

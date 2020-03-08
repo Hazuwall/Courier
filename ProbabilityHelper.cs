@@ -45,14 +45,9 @@ namespace Courier
 
             //Интегрирование для получения функции распределения
             if (returnCdf)
-            {
-                for (int x = 1; x < distribution.Length; x++)
-                    distribution[x] += distribution[x - 1];
-                distribution[distribution.Length - 1] = 1;
-            }
+                PdfToCdf(distribution);
             return distribution;
         }
-
 
         public static double[,] Normal2dDistribution(double mean1, double mean2, double std1, double std2)
         {
@@ -64,6 +59,13 @@ namespace Courier
                 for (int y = 0; y < yDistrib.Length; y++)
                     distrib[x, y] = xDistrib[x] * yDistrib[y];
             return distrib;
+        }
+
+        public static void PdfToCdf(double[] distribution)
+        {
+            for (int x = 1; x < distribution.Length; x++)
+                distribution[x] += distribution[x - 1];
+            distribution[distribution.Length - 1] = 1;
         }
 
         /// <summary>
@@ -93,24 +95,33 @@ namespace Courier
             return Sample(cdf) - cdf.Length /2;
         }
 
-        /// <summary>
-        /// Нормализовать плотность распределения
-        /// </summary>
-        /// <param name="pdf"></param>
-        public static void NormalizePdf(double[] pdf)
+        public static void BayesTheorem(double[] prior, double[] posterior, double lowerBound=0)
+        {
+            double sum = 0;
+            for (int i = 0; i < prior.Length; i++)
+            {
+                double prob = prior[i] * posterior[i];
+                prior[i] = prob;
+                sum += prob;
+            }
+            NormalizePdf(prior, lowerBound, sum);
+        }
+
+        public static void NormalizePdf(double[] pdf, double lowerBound)
         {
             double sum = pdf.Sum();
-            NormalizePdf(pdf, sum);
+            NormalizePdf(pdf, lowerBound, sum);
         }
-        public static void NormalizePdf(double[] pdf, double sum)
+
+        public static void NormalizePdf(double[] pdf, double lowerBound, double sum)
         {
-            if (sum < double.Epsilon * 100 || double.IsNaN(sum))
+            if (sum < double.Epsilon * 1000 || double.IsNaN(sum))
                 SetUniformDistribution(pdf);
             else
                 for (int i = 0; i < pdf.Length; i++)
                 {
                     double p = pdf[i] / sum;
-                    pdf[i] = p > 0.000000000001 ? p : 0.000000000001;
+                    pdf[i] = p > lowerBound ? p : lowerBound;
                 }
         }
 

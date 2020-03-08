@@ -35,16 +35,16 @@ namespace Courier
         /// </summary>
         /// <param name="shape"></param>
         /// <returns></returns>
-        public static int[] GetOneDimensionalIndexFactors(int[]shape)
+        public static int[] GetIndexStrides(int[]shape)
         {
-            int[] factors = new int[shape.Length];
-            int factor = 1;
-            for (int i = factors.Length-1; i >= 0; i--)
+            int[] strides = new int[shape.Length];
+            int stride = 1;
+            for (int i = strides.Length-1; i >= 0; i--)
             {
-                factors[i] = factor;
-                factor *= shape[i];
+                strides[i] = stride;
+                stride *= shape[i];
             }
-            return factors;
+            return strides;
         }
 
         /// <summary>
@@ -77,8 +77,15 @@ namespace Courier
             vector[0] = temp;
         }
 
+        public static void SetLowerBound(double[] arr, double bound)
+        {
+            for (int i = 0; i < arr.Length; i++)
+                if (arr[i] < bound)
+                    arr[i] = bound;
+        }
+
         /// <summary>
-        /// Круговая одномерная свёртка
+        /// Круговая одномерная транспонированная свёртка
         /// </summary>
         /// <param name="startIndex">Индекс вектора, с которого нужно начать свёртку</param>
         /// <param name="vector">Вектор, над которым производится операция</param>

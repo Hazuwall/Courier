@@ -39,7 +39,8 @@ namespace Courier
 
         public void Execute(object parameter)
         {
-            _execute((T)parameter);
+            if(CanExecute(parameter))
+                _execute((T)parameter);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Courier
     public class Simulation
     {
         public World World { get; }
-        public int DelayTime { get; set; } = 3000;
+        public int DelayTime { get; set; } = 1000;
 
         public Simulation(World world)
         {
@@ -21,10 +21,13 @@ namespace Courier
         public async Task SimulateAsync(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
-                await StepAsync();
+            {
+                Step();
+                await Task.Delay(DelayTime);
+            }
         }
 
-        public async Task StepAsync()
+        public void Step()
         {
             var objects = World.Objects;
             for (int i = 0; i < objects.Count; i++)
@@ -38,7 +41,6 @@ namespace Courier
                             action.Execute(World, obj);
                 }
             }
-            await Task.Delay(DelayTime);
         }
     }
 }

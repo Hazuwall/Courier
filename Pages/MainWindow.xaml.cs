@@ -23,7 +23,10 @@ namespace Courier
         {
             InitializeComponent();
 
-            DataContext = ViewModel = new SimulationViewModel();
+            DataContext = ViewModel = new SimulationViewModel()
+            {
+                CanvasSize = 500
+            };
         }
     }
 }

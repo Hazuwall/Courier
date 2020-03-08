@@ -34,7 +34,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Robot.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -60,28 +66,28 @@
     </ApplicationDefinition>
     <Compile Include="ActionFactory.cs" />
     <Compile Include="DrawingHelper.cs" />
-    <Compile Include="RelayCommand.cs" />
-    <Compile Include="SimulationViewModel.cs" />
+    <Compile Include="ViewModels\RelayCommand.cs" />
+    <Compile Include="ViewModels\SimulationViewModel.cs" />
     <Compile Include="Strategy.cs" />
     <Compile Include="MathHelper.cs" />
     <Compile Include="ObjectFactory.cs" />
     <Compile Include="ProbabilityHelper.cs" />
-    <Compile Include="Pages\ProbabilityWindow.xaml.cs">
-      <DependentUpon>ProbabilityWindow.xaml</DependentUpon>
+    <Compile Include="Pages\LocalizationWindow.xaml.cs">
+      <DependentUpon>LocalizationWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="StaticModel.cs" />
+    <Compile Include="Models\StaticModel.cs" />
     <Compile Include="WorldAction.cs" />
-    <Compile Include="Camera.cs" />
-    <Compile Include="NavigationSystem.cs" />
-    <Compile Include="Person.cs" />
+    <Compile Include="Models\Camera.cs" />
+    <Compile Include="Models\NavigationSystem.cs" />
+    <Compile Include="Models\Person.cs" />
     <Compile Include="Point.cs" />
-    <Compile Include="Robot.cs" />
+    <Compile Include="Models\Robot.cs" />
     <Compile Include="Simulation.cs" />
-    <Compile Include="WetFloor.cs" />
-    <Compile Include="World.cs" />
-    <Compile Include="ModelBase.cs" />
+    <Compile Include="Models\WetFloor.cs" />
+    <Compile Include="Models\World.cs" />
+    <Compile Include="Models\ModelBase.cs" />
     <Compile Include="WorldGenerator.cs" />
-    <Compile Include="WorldObject.cs" />
+    <Compile Include="Models\WorldObject.cs" />
     <Page Include="Pages\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -94,7 +100,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Pages\ProbabilityWindow.xaml">
+    <Page Include="Pages\LocalizationWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -117,6 +123,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Map.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -149,6 +159,14 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\Plant.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\WetFloor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Robot.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

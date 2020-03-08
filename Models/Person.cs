@@ -31,7 +31,7 @@ namespace Courier
         public override IEnumerable<IWorldAction> Call()
         {
             double emptyProb = _camera.Measure(this, 0)[EmptyClassName];
-            var action = _strategy.GetAction(emptyProb > 0.9);
+            var action = _strategy.GetAction(emptyProb > 0.9, false);
             return action == null ? null : new List<IWorldAction>() { action };
         }
     }

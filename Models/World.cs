@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,11 +9,11 @@ namespace Courier
 {
     public class World
     {
-        public List<WorldObject> Objects { get; }
+        public Collection<WorldObject> Objects { get; }
         public Point LowerBound { get; }
         public Point UpperBound { get; }
 
-        public World(Point lowerBound, Point upperBound, List<WorldObject> objects)
+        public World(Point lowerBound, Point upperBound, Collection<WorldObject> objects)
         {
             LowerBound = lowerBound;
             UpperBound = upperBound;
@@ -45,7 +46,9 @@ namespace Courier
             if (!(LowerBound <= lower))
                 lower = LowerBound;
 
-            var objects = Objects.Where(t => t.Point.IsInside(lower, upper)).ToList();
+            Collection<WorldObject> objects = new Collection<WorldObject>();
+            foreach (var obj in Objects.Where(t => t.Point.IsInside(lower, upper)))
+                objects.Add(obj);
             return new World(lower, upper, objects);
         }
         
@@ -55,7 +58,9 @@ namespace Courier
                 throw new ArgumentException();
             Point lower = new Point(Math.Max(center.X - distance, LowerBound.X), Math.Max(center.Y - distance, LowerBound.Y), center.Z);
             Point upper = new Point(Math.Min(center.X + distance, UpperBound.X), Math.Max(center.Y - distance, UpperBound.Y), center.Z);
-            var objects = Objects.Where(t => t.Point.IsInside(lower, upper)).ToList();
+            Collection<WorldObject> objects = new Collection<WorldObject>();
+            foreach (var obj in Objects.Where(t => t.Point.IsInside(lower, upper)))
+                objects.Add(obj);
             return new World(lower, upper, objects);
         }
 

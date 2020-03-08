@@ -11,31 +11,45 @@ namespace Courier
         bool Execute(World world, WorldObject obj);
     }
 
-    public class LiftAction : IWorldAction
+    public class ElevatorAction : IWorldAction
     {
-        private readonly int _floor=0;
-        private readonly double _prob=0;
-
+        public int RelativeFloor { get; set; } = 0;
+        public double SuccessProb { get; set; } = 0.75;
 
         public bool Execute(World world, WorldObject obj)
         {
-            /*if (obj != null && world.IsNearby(obj.Point, Lift.ClassName))
+            if (world.IsNearby(obj.Point, StaticModel.ElevatorClassName))
             {
-                var oldPoint = obj.Point;
-                double rand = new Random().NextDouble();
-                if (rand > _prob)
+                Point oldPoint = obj.Point;
+                int destFloor = ComputeProbabilisticDestinationFloor(oldPoint.Z, world.UpperBound.Z);
+                Point newPoint = new Point(oldPoint.X, oldPoint.Y, destFloor);
+                if (world.IsFree(newPoint))
                 {
-                    var newPoint = new Point(oldPoint.X, oldPoint.Y, _floor);
-                    if (world.IsFree(newPoint))
-                    {
-                        obj.Point = newPoint;
-                        return true;
-                    }
+                    obj.Point = newPoint;
+                    return destFloor == oldPoint.Z + RelativeFloor;
                 }
-            }*/
+            }
             return false;
         }
+
+        public int ComputeProbabilisticDestinationFloor(int currentFloor, int floorBound)
+        {
+            double[] distrib = new double[floorBound + 1];
+            ProbabilityHelper.SetUniformDistribution(distrib);
+            int expected = currentFloor + RelativeFloor;
+            if (expected <= floorBound && expected >= 0)
+            {
+                distrib[expected] = SuccessProb;
+                ProbabilityHelper.NormalizePdf(distrib, 0);
+            }
+            ProbabilityHelper.PdfToCdf(distrib);
+            return ProbabilityHelper.Sample(distrib);
+        }
     }
+
+
+        
+
 
     /// <summary>
     /// Действие, создающее скользкий пол под объектом
@@ -47,7 +61,7 @@ namespace Courier
             var point = obj.Point;
             if (world.GetWetness(point)==0)
             {
-                var wetFloorObj = new ObjectFactory().CreateWetFloorObj(point);
+                var wetFloorObj = new ObjectFactory(obj.Size).CreateWetFloorObj(point, obj.Orientation - 90);
                 world.Objects.Add(wetFloorObj);
             }
             return true;

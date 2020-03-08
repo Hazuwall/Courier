@@ -3,21 +3,54 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Courier"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Робот-курьер" Height="600" Width="600">
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding NewSimCommand}"/>
+        <KeyBinding Key="F5" Command="{Binding ContinueSimCommand}"/>
+        <KeyBinding Key="F10" Command="{Binding StepSimCommand}"/>
+        <KeyBinding Key="F5" Modifiers="Shift" Command="{Binding StopSimCommand}"/>
+
+        <KeyBinding Key="Up" Command="{Binding ChangeFloorCommand}">
+            <KeyBinding.CommandParameter>
+                <sys:Int32>1</sys:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Key="Down" Command="{Binding ChangeFloorCommand}">
+            <KeyBinding.CommandParameter>
+                <sys:Int32>-1</sys:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+    </Window.InputBindings>
+    
     <Grid>
-        <Menu Height="25" VerticalAlignment="Top">
+        <Menu Height="25" VerticalAlignment="Top" >
             <MenuItem Header="Симуляция">
-                <MenuItem Header="Начать новую" Command="{Binding NewSimCommand}"/>
-                <MenuItem Header="Продолжить" Command="{Binding ContinueSimCommand}"/>
-                <MenuItem Header="Остановить" Command="{Binding StopSimCommand}"/>
+                <MenuItem Header="Начать (Ctrl+N)" Command="{Binding NewSimCommand}"/>
+                <MenuItem Header="Продолжить (F5)" Command="{Binding ContinueSimCommand}"/>
+                <MenuItem Header="Шаг (F10)" Command="{Binding StepSimCommand}"/>
+                <MenuItem Header="Остановить (Shift+F5)" Command="{Binding StopSimCommand}"/>
+            </MenuItem>
+            <MenuItem Header="Обзор">
+                <MenuItem Header="Этаж вверх (Up)" Command="{Binding ChangeFloorCommand}">
+                    <MenuItem.CommandParameter>
+                        <sys:Int32>1</sys:Int32>
+                    </MenuItem.CommandParameter>
+                </MenuItem>
+                <MenuItem Header="Этаж вниз (Down)" Command="{Binding ChangeFloorCommand}">
+                    <MenuItem.CommandParameter>
+                        <sys:Int32>-1</sys:Int32>
+                    </MenuItem.CommandParameter>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Распределение вероятности..." Command="{Binding OpenLocalizationCommand}"/>
             </MenuItem>
         </Menu>
-        <ItemsControl ItemsSource="{Binding WorldObjects}">
+        <ItemsControl HorizontalAlignment="Center" ItemsSource="{Binding FloorObjects}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas Width="500" Height="500"/>
+                    <Canvas Width="{Binding CanvasSize}" Height="{Binding FloorCanvasSize}"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>

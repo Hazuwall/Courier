@@ -8,6 +8,15 @@ namespace Courier
 {
     public static class ActionFactory
     {
+        public static ElevatorAction CreateElevatorAction(int relativeFloor, bool exact=true)
+        {
+            return new ElevatorAction()
+            {
+                RelativeFloor = relativeFloor,
+                SuccessProb = exact ? 1 : 0.75
+            };
+        }
+
         public static MopAction CreateMopAction()
         {
             return new MopAction();
@@ -19,7 +28,7 @@ namespace Courier
             {
                 Distance = distance,
                 Direction = direction,
-                Std = exact ? 0.00001 : 0.75,
+                Std = exact ? 0.00001 : 0.3,
                 WetnessFactor = 0.1,
                 DistanceFactor = 0.5
             };
@@ -36,7 +45,7 @@ namespace Courier
             var action = new RotateAction()
             {
                 Angle = angle,
-                Std = exact? 0.00001 : 0.75,
+                Std = exact? 0.00001 : 0.3,
                 WetnessFactor = 0.1,
                 AngleFactor = 0.5
             };
