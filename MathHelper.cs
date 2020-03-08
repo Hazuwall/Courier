@@ -91,12 +91,31 @@ namespace Courier
         /// <param name="vector">Вектор, над которым производится операция</param>
         /// <param name="kernel">Ядро свёртки, длина которого соответствует длине обрабатываемой части вектора</param>
         /// <param name="output">Выходной вектор, длина которого равна длине ядра</param>
-        public static void TransposedCircularConvolution(int startIndex, double[] vector, double[] kernel, double[] output)
+        public static void TransposedCircularConvolution1d(int startIndex, double[] vector, double[] kernel, double[] output)
         {
             Array.Clear(output, 0, output.Length);
             for (int i = 0; i < kernel.Length; i++)
                 for (int j = 0; j < kernel.Length; j++)
                     output[(j + i) % kernel.Length] += vector[startIndex + i] * kernel[j];
+        }
+
+        public static void TransposedConvolution1d(double[] input, int index, int axisIndex, int axisStride, int axisLength, double[] kernel, double[] output)
+        {
+            int half = kernel.Length / 2;
+            for (int i = Math.Max(0, half - axisIndex); i < kernel.Length && axisIndex + i - half < axisLength; i++)
+            {
+                int localIndex = index + (i - half) * axisStride;
+                output[localIndex] += input[localIndex] * kernel[i];
+            }
+        }
+
+        public static void Convolution1d(double[] A, double[] kernel, double[] output)
+        {
+            Array.Clear(output, 0, output.Length);
+            int half = kernel.Length / 2;
+            for (int x = 0; x < output.Length; x++)
+                for (int i = Math.Max(0, half - x); i < kernel.Length && x + i - half < A.Length; i++)
+                    output[x] += A[x + i - half] * kernel[i];
         }
 
         public static void Convolution2d(double[,] A, double[] kernel, double[,] output)

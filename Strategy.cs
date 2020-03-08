@@ -32,15 +32,20 @@ namespace Courier
                 return ActionFactory.CreateElevatorAction(relativeFloor, IsExact);
             }
 
+            if (!isClear)
+            {
+                return ActionFactory.CreateRotateAction(-90, IsExact);
+            }
+
             double randVar = _random.NextDouble();
-            if (randVar < TranslateProb && isClear)
+            if (randVar < TranslateProb)
             {
                 int distance = _random.Next(1, 3);
                 return ActionFactory.CreateTranslationAction(distance, 0, IsExact);
             }
             else if (randVar - TranslateProb < RotateProb)
             {
-                int angle = _random.Next(0, 3) > 0 ? -90 : 90;
+                int angle = _random.Next(0, 2) == 0 ? -90 : 90;
                 return ActionFactory.CreateRotateAction(angle, IsExact);
             }
             else

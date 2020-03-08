@@ -80,6 +80,11 @@ namespace Courier
             FillMaps(world);
         }
 
+        public bool IsFree(int index)
+        {
+            return _occupancyMap[index / 4] == 0;
+        }
+
         #region Заполнение карты
 
         /// <summary>
@@ -180,42 +185,20 @@ namespace Courier
             int kernelSize = (distance + 1) * 3;
             if (kernelSize % 2 == 0)
                 kernelSize++;
-            int halfKernel = kernelSize / 2;
-            double[,] tempKernel = new double[kernelSize, 2];
-            double[,] kernel = new double[kernelSize, 2];
+
+            double[] tempKernel = new double[kernelSize];
+            double[] kernel = new double[kernelSize];
 
             Array.Clear(_tempPdf, 0, _tempPdf.Length);
-            for (int x = 0; x < WorldShape[0]; x++)
+            for (int index = 0; index < _belief.Length; index+=4)
             {
-                for (int y = 0; y < WorldShape[1]; y++)
+                if (!IsFree(index))
+                    continue;
+                int[] indices = MathHelper.GetMultiDimensionalIndices(index, WorldShape);
+                for(int j = 0; j < 2; j++)
                 {
-                    for (int z = 0; z < WorldShape[2]; z++)
-                    {
-                        int index = x * _strides[0] + y * _strides[1] + z * _strides[2];
-                        if (_occupancyMap[index / 4] != 0)
-                            continue;
-
-                        ComputeTranslationKernel(index, distance, tempKernel, kernel);
-
-                        for (int i = Math.Max(0, halfKernel - x); i < kernel.GetLength(0) && x + i - halfKernel < WorldShape[0]; i++)
-                        {
-                            int localIndex = (x + i - halfKernel) * _strides[0] + y * _strides[1] + z * _strides[2];
-                            if (_occupancyMap[localIndex / 4] != 0)
-                                break;
-                            int a = i < halfKernel ? 2 : 0;
-
-                            _tempPdf[localIndex + a] += _belief[index + a] * kernel[i, 0];
-                        }
-                        for (int i = Math.Max(0, halfKernel - y); i < kernel.GetLength(0) && y + i - halfKernel < WorldShape[1]; i++)
-                        {
-                            int localIndex = x * _strides[0] + (y + i - halfKernel) * _strides[1] + z * _strides[2];
-                            if (_occupancyMap[localIndex / 4] != 0)
-                                continue;
-                            int a = i < halfKernel ? 3 : 1;
-
-                            _tempPdf[localIndex + a] += _belief[index + a] * kernel[i, 1];
-                        }
-                    }
+                    ComputeTranslationKernel(index+j, distance, tempKernel, kernel);
+                    TransposedConvolutionTillOccupancy(index+j, j, indices[j], kernel, _tempPdf);
                 }
             }
             _tempPdf.CopyTo(_belief, 0);
@@ -226,14 +209,32 @@ namespace Courier
             });;
         }
 
-        private void ComputeTranslationKernel(int posIndex, int distance, double[,] temp, double[,] output)
+        private void ComputeTranslationKernel(int posIndex, int distance, double[] temp, double[] output)
         {
-            int half = output.Length / 4;
-            temp[distance + half, 0] = _belief[posIndex];
-            temp[-distance + half, 0] = _belief[posIndex + 2];
-            temp[distance + half, 1] = _belief[posIndex + 1];
-            temp[-distance + half, 1] = _belief[posIndex + 3];
-            MathHelper.Convolution2d(temp, _gaussianKernel, output);
+            int half = output.Length / 2;
+            temp[distance + half] = _belief[posIndex];
+            temp[-distance + half] = _belief[posIndex + 2];
+            MathHelper.Convolution1d(temp, _gaussianKernel, output);
+        }
+
+        private void TransposedConvolutionTillOccupancy(int posIndex, int axis, int axisIndex, double[] kernel, double[] output)
+        {
+            int half = kernel.Length / 2;
+            for (int i = half; i < kernel.Length && axisIndex + i - half < WorldShape[axis]; i++)
+            {
+                int localIndex = posIndex + (i - half) * _strides[axis];
+                if (!IsFree(localIndex))
+                    break;
+                output[localIndex] += _belief[posIndex] * kernel[i];
+            }
+            int lower = Math.Max(0, half - axisIndex);
+            for (int i = half - 1; i >= lower; i--)
+            {
+                int localIndex = posIndex + (i - half) * _strides[axis] + 2;
+                if (!IsFree(localIndex))
+                    break;
+                output[localIndex] += _belief[posIndex + 2] * kernel[i];
+            }
         }
 
         public void OnElevation(int relativeFloor)
@@ -243,16 +244,13 @@ namespace Courier
 
             ProbabilityHelper.SetUniformDistribution(_tempPdf);
             int elevatorLabelIndex = Array.IndexOf(_mapLabels, StaticModel.ElevatorClassName);
-            for (int i = 0; i < _viewMap.Length; i++)
+            for (int index = 0; index < _viewMap.Length; index++)
             {
-                if(_viewMap[i] == elevatorLabelIndex)
+                if(_viewMap[index] == elevatorLabelIndex)
                 {
-                    int z = MathHelper.GetMultiDimensionalIndices(i, WorldShape)[2];
-                    for (int j = Math.Max(0, halfKernel - z); j < kernel.Length && z + j - halfKernel < WorldShape[2]; j++)
-                    {
-                        int localIndex = i + (j - halfKernel) * _strides[2];
-                        _tempPdf[localIndex] = _belief[localIndex] * kernel[j];
-                    }
+                    int z = MathHelper.GetMultiDimensionalIndices(index, WorldShape)[2];
+                    MathHelper.TransposedConvolution1d(_belief, index, z, _strides[2],
+                        WorldShape[2], kernel, _tempPdf);
                 }
             }
 
@@ -273,14 +271,12 @@ namespace Courier
                 kernel[MathHelper.GetOneTurn((i-offset)*90) / 90] = rotationPdf[i];
 
             double[] temp = new double[4];
-            for (int i = 0; i < _belief.Length; i += 4)
+            for (int index = 0; index < _belief.Length; index += 4)
             {
-                if (_occupancyMap[i/4] != 0)
+                if (!IsFree(index))
                     continue;
-
-                MathHelper.TransposedCircularConvolution(i, _belief, kernel, temp);
-                for (int a = 0; a < 4; a++)
-                    _belief[i + a] = temp[a];
+                MathHelper.TransposedCircularConvolution1d(index, _belief, kernel, temp);
+                temp.CopyTo(_belief, index);
             }
 
             MathHelper.SetLowerBound(_belief, MinProbability);
