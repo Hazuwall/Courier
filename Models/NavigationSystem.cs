@@ -243,7 +243,7 @@ namespace Courier
             double[] kernel = ProbabilityHelper.NormalDistribution(relativeFloor, ElevationStd);
             int halfKernel = kernel.Length / 2;
 
-            ProbabilityHelper.SetUniformDistribution(_tempPdf);
+            Array.Clear(_tempPdf, 0, _tempPdf.Length);
             int elevatorLabelIndex = Array.IndexOf(_mapLabels, StaticModel.ElevatorClassName);
             for (int index = 0; index < _viewMap.Length; index++)
             {

@@ -13,6 +13,7 @@ namespace Courier
     public class WorldGenerator
     {
         private readonly double _canvasSize;
+        private readonly Dictionary<char, string> _staticObjectCodes;
 
         public ObjectFactory Factory { get; }
         public World World => _world;
@@ -31,6 +32,16 @@ namespace Courier
         {
             _canvasSize = canvasSize;
             Factory = new ObjectFactory();
+            _staticObjectCodes = new Dictionary<char, string>()
+            {
+                { 'w', StaticModel.WallClassName },
+                { 'f', StaticModel.WindowClassName },
+                { 'p', StaticModel.PlantClassName },
+                { 'e', StaticModel.ElevatorClassName },
+                { 'd', StaticModel.DeskClassName },
+                { 'c', StaticModel.CoolerClassName },
+                { 's', StaticModel.SofaClassName }
+            };
         }
 
         public World Generate(string[,,] map, Collection<WorldObject> objectCollection)
@@ -41,10 +52,10 @@ namespace Courier
                 new Point(map.GetLength(2) - 1, map.GetLength(1) - 1, map.GetLength(0) - 1),
                 objectCollection);
 
-            WorldObject obj = null;
+            WorldObject obj;
             Point point;
-            bool isStatic;
             char code;
+            string className;
             Dictionary<Point, char> npcDictionary = new Dictionary<Point, char>();
             for (int z = 0; z < map.GetLength(0); z++)
             {
@@ -53,35 +64,14 @@ namespace Courier
                     for (int x = 0; x < map.GetLength(2); x++)
                     {
                         point = new Point(x, map.GetLength(1) - y - 1, z);
-                        isStatic = true;
                         code = map[z, y, x][0];
-                        switch (code)
+                        if(_staticObjectCodes.TryGetValue(code, out className))
                         {
-                            case 'w':
-                                obj = Factory.CreateWallObj(point);
-                                break;
-                            case 'f':
-                                obj = Factory.CreateWindowObj(point);
-                                break;
-                            case 'p':
-                                obj = Factory.CreatePlantObj(point);
-                                break;
-                            case 'e':
-                                obj = Factory.CreateElevatorObj(point);
-                                break;
-                            case 'd':
-                                obj = Factory.CreateDeskObj(point);
-                                break;
-                            case ' ':
-                                isStatic = false;
-                                break;
-                            default:
-                                npcDictionary.Add(point, code);
-                                isStatic = false;
-                                break;
-                        }
-                        if (isStatic)
+                            obj = Factory.CreateStaticObj(className, point);
                             world.Objects.Add(obj);
+                        }
+                        else
+                            npcDictionary.Add(point, code);
                     }
                 }
             }

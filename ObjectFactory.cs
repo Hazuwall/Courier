@@ -24,9 +24,11 @@ namespace Courier
             {
                 string[] classes = new string[] {
                     Person.ClassName,
+                    StaticModel.CoolerClassName,
                     StaticModel.DeskClassName,
                     StaticModel.ElevatorClassName,
                     StaticModel.PlantClassName,
+                    StaticModel.SofaClassName,
                     StaticModel.WallClassName,
                     StaticModel.WindowClassName,
                     ModelBase.EmptyClassName,
@@ -70,31 +72,9 @@ namespace Courier
             };
         }
 
-        public WorldObject CreateDeskObj(Point point)
-        {
-            var model = new StaticModel(StaticModel.DeskClassName);
-            var obj = new WorldObject(model, Size, point, -90);
-            return obj;
-        }
-
-        public WorldObject CreateElevatorObj(Point point)
-        {
-            var model = new StaticModel(StaticModel.ElevatorClassName);
-            var obj = new WorldObject(model, Size, point);
-            return obj;
-        }
-
-
         public WorldObject CreatePersonObj(Point point)
         {
             var model = new Person();
-            var obj = new WorldObject(model, Size, point);
-            return obj;
-        }
-
-        public WorldObject CreatePlantObj(Point point)
-        {
-            var model = new StaticModel(StaticModel.PlantClassName);
             var obj = new WorldObject(model, Size, point);
             return obj;
         }
@@ -133,6 +113,13 @@ namespace Courier
             return obj;
         }
 
+        public WorldObject CreateStaticObj(string className, Point point)
+        {
+            var model = new StaticModel(className);
+            var obj = new WorldObject(model, Size, point);
+            return obj;
+        }
+
         public WorldObject CreateWalkerObj(World world, Point point, bool isCleaner=false)
         {
             var camera = _walkerCamera ?? InitializeWalkerCamera(world);
@@ -146,20 +133,6 @@ namespace Courier
             var model = isCleaner ? new Cleaner(camera, behavior) : new Walker(camera, behavior);
             int orientation = _random.Next(0, 4) * 90;
             var obj = new WorldObject(model, Size, point, orientation);
-            return obj;
-        }
-
-        public WorldObject CreateWallObj(Point point)
-        {
-            var model = new StaticModel(StaticModel.WallClassName);
-            var obj = new WorldObject(model, Size, point);
-            return obj;
-        }
-
-        public WorldObject CreateWindowObj(Point point)
-        {
-            var model = new StaticModel(StaticModel.WindowClassName);
-            var obj = new WorldObject(model, Size, point);
             return obj;
         }
 

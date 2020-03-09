@@ -151,7 +151,9 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\Desk.png" />
+    <Resource Include="Icons\Desk.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\Window.png">
@@ -159,18 +161,30 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\Elevator.png" />
+    <Resource Include="Icons\Elevator.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\Plant.png" />
+    <Resource Include="Icons\Plant.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\WetFloor.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Robot.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\Cooler.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\Sofa.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

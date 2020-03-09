@@ -25,7 +25,9 @@ namespace Courier
                 Point newPoint = new Point(oldPoint.X, oldPoint.Y, destFloor);
                 if (world.IsFree(newPoint))
                 {
+                    world.Objects.Remove(obj);
                     obj.Point = newPoint;
+                    world.Objects.Add(obj);
                     return destFloor == oldPoint.Z + RelativeFloor;
                 }
             }

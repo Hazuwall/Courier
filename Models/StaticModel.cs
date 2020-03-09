@@ -8,9 +8,11 @@ namespace Courier
 {
     public class StaticModel : ModelBase
     {
+        public const string CoolerClassName = "Cooler";
         public const string DeskClassName = "Desk";
         public const string ElevatorClassName = "Elevator";
         public const string PlantClassName = "Plant";
+        public const string SofaClassName = "Sofa";
         public const string WallClassName = "Wall";
         public const string WindowClassName = "Window";
 
