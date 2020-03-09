@@ -61,6 +61,21 @@ namespace Courier
             return distrib;
         }
 
+        public static void SetUniformDistribution(double[] output)
+        {
+            double uniformProb = 1f / output.Length;
+            for (int i = 0; i < output.Length; i++)
+                output[i] = uniformProb;
+        }
+
+        public static void SetRandomDistribution(double[] distribution)
+        {
+            byte[] arr = new byte[distribution.Length];
+            _Random.NextBytes(arr);
+            arr.CopyTo(distribution, 0);
+            NormalizePdf(distribution, 0);
+        }
+
         public static void PdfToCdf(double[] distribution)
         {
             for (int x = 1; x < distribution.Length; x++)
@@ -123,13 +138,6 @@ namespace Courier
                     double p = pdf[i] / sum;
                     pdf[i] = p > lowerBound ? p : lowerBound;
                 }
-        }
-
-        public static void SetUniformDistribution(double[] output)
-        {
-            double uniformProb = 1f / output.Length;
-            for (int i = 0; i < output.Length; i++)
-                output[i] = uniformProb;
         }
     }
 }

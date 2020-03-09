@@ -11,16 +11,16 @@ namespace Courier
         bool Execute(World world, WorldObject obj);
     }
 
-    public class ElevatorAction : IWorldAction
+    public class ElevateAction : IWorldAction
     {
         public int RelativeFloor { get; set; } = 0;
         public double SuccessProb { get; set; } = 0.75;
 
         public bool Execute(World world, WorldObject obj)
         {
-            if (world.IsNearby(obj.Point, StaticModel.ElevatorClassName))
+            Point oldPoint = obj.Point;
+            if (world.IsNearby(oldPoint, StaticModel.ElevatorClassName))
             {
-                Point oldPoint = obj.Point;
                 int destFloor = ComputeProbabilisticDestinationFloor(oldPoint.Z, world.UpperBound.Z);
                 Point newPoint = new Point(oldPoint.X, oldPoint.Y, destFloor);
                 if (world.IsFree(newPoint))
@@ -48,9 +48,6 @@ namespace Courier
     }
 
 
-        
-
-
     /// <summary>
     /// Действие, создающее скользкий пол под объектом
     /// </summary>
@@ -61,7 +58,8 @@ namespace Courier
             var point = obj.Point;
             if (world.GetWetness(point)==0)
             {
-                var wetFloorObj = new ObjectFactory(obj.Size).CreateWetFloorObj(point, obj.Orientation - 90);
+                var factory = new ObjectFactory() { Size = obj.Size };
+                var wetFloorObj = factory.CreateWetFloorObj(point, obj.Orientation - 90);
                 world.Objects.Add(wetFloorObj);
             }
             return true;
@@ -111,7 +109,7 @@ namespace Courier
     /// <summary>
     /// Действие, перемещающее объект с точностью, распределённой по нормальному закону
     /// </summary>
-    public class TranslationAction : IWorldAction
+    public class TranslateAction : IWorldAction
     {
         public int Distance { get; set; } = 1;
         public int Direction { get; set; } = 0;

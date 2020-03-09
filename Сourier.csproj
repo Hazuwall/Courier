@@ -65,6 +65,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ActionFactory.cs" />
+    <Compile Include="DataModels\ProbabilitySettings.cs" />
     <Compile Include="DrawingHelper.cs" />
     <Compile Include="ViewModels\RelayCommand.cs" />
     <Compile Include="ViewModels\SimulationViewModel.cs" />
@@ -80,7 +81,7 @@
     <Compile Include="Models\Camera.cs" />
     <Compile Include="Models\NavigationSystem.cs" />
     <Compile Include="Models\Person.cs" />
-    <Compile Include="Point.cs" />
+    <Compile Include="DataModels\Point.cs" />
     <Compile Include="Models\Robot.cs" />
     <Compile Include="Simulation.cs" />
     <Compile Include="Models\WetFloor.cs" />
@@ -130,6 +131,9 @@
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

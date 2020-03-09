@@ -48,6 +48,7 @@ namespace Courier
 
                 var generator = new WorldGenerator(CanvasSize);
                 string[,,] map = WorldGenerator.ParseMapFromJson("Map.json");
+                generator.Settings = ProbabilitySettings.ParseFromJson("Settings.json");
                 World world = generator.Generate(map, _worldObjects);
                 _worldObjects.CollectionChanged += WorldObjects_CollectionChanged;
 

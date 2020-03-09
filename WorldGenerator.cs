@@ -14,23 +14,28 @@ namespace Courier
     {
         private readonly double _canvasSize;
 
-        public ObjectFactory Factory => _factory;
-        private ObjectFactory _factory = null;
-
+        public ObjectFactory Factory { get; }
         public World World => _world;
         private World _world = null;
 
         public Robot Robot => _robot;
         private Robot _robot = null;
 
+        public ProbabilitySettings Settings
+        {
+            get { return Factory.Settings; }
+            set { Factory.Settings = value; }
+        }
+
         public WorldGenerator(double canvasSize)
         {
             _canvasSize = canvasSize;
+            Factory = new ObjectFactory();
         }
 
         public World Generate(string[,,] map, Collection<WorldObject> objectCollection)
         {
-            _factory = new ObjectFactory(_canvasSize / map.GetLength(2));
+            Factory.Size = _canvasSize / map.GetLength(2);
 
             World world = new World(new Point(0, 0, 0),
                 new Point(map.GetLength(2) - 1, map.GetLength(1) - 1, map.GetLength(0) - 1),
@@ -53,19 +58,19 @@ namespace Courier
                         switch (code)
                         {
                             case 'w':
-                                obj = _factory.CreateWallObj(point);
+                                obj = Factory.CreateWallObj(point);
                                 break;
                             case 'f':
-                                obj = _factory.CreateWindowObj(point);
+                                obj = Factory.CreateWindowObj(point);
                                 break;
                             case 'p':
-                                obj = _factory.CreatePlantObj(point);
+                                obj = Factory.CreatePlantObj(point);
                                 break;
                             case 'e':
-                                obj = _factory.CreateElevatorObj(point);
+                                obj = Factory.CreateElevatorObj(point);
                                 break;
                             case 'd':
-                                obj = _factory.CreateDeskObj(point);
+                                obj = Factory.CreateDeskObj(point);
                                 break;
                             case ' ':
                                 isStatic = false;
@@ -86,16 +91,16 @@ namespace Courier
                 switch (npcInfo.Value)
                 {
                     case 'M':
-                        obj = _factory.CreatePersonObj(npcInfo.Key);
+                        obj = Factory.CreatePersonObj(npcInfo.Key);
                         break;
                     case 'W':
-                        obj = _factory.CreateWalkerObj(world, npcInfo.Key);
+                        obj = Factory.CreateWalkerObj(world, npcInfo.Key);
                         break;
                     case 'C':
-                        obj = _factory.CreateWalkerObj(world, npcInfo.Key, isCleaner: true);
+                        obj = Factory.CreateWalkerObj(world, npcInfo.Key, isCleaner: true);
                         break;
                     case 'R':
-                        obj = _factory.CreateRobotObj(world, npcInfo.Key);
+                        obj = Factory.CreateRobotObj(world, npcInfo.Key);
                         _robot = obj.Model as Robot;
                         break;
                     default:

@@ -31,14 +31,16 @@ namespace Courier
             if(_isMovementNext)
             {
                 var prediction = _camera.Measure(this, 0);
-                action = _strategy.GetAction(prediction[EmptyClassName] > 0.7, prediction[StaticModel.ElevatorClassName] > 0.7);
-                if (action is TranslationAction)
+                action = _strategy.GetAction(prediction[EmptyClassName] > 0.5, prediction[StaticModel.ElevatorClassName] > 0.5);
+                if (action is TranslateAction)
                 {
-                    var translation = action as TranslationAction;
+                    var translation = action as TranslateAction;
                     NavigationSystem.OnTranslation(translation.Direction, translation.Distance);
                 }
                 else if (action is RotateAction)
                     NavigationSystem.OnRotation((action as RotateAction).Angle);
+                else if(action is ElevateAction)
+                    NavigationSystem.OnElevation((action as ElevateAction).RelativeFloor);
             }
             else
             {
@@ -47,6 +49,7 @@ namespace Courier
                     var prediction = _camera.Measure(this, direction);
                     NavigationSystem.OnMeasurement(prediction, direction);
                 }
+                NavigationSystem.OnMeasurementCompleted(4);
             }
             _isMovementNext = !_isMovementNext;
             return action == null ? null : new List<IWorldAction>() { action };

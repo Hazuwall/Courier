@@ -60,6 +60,7 @@ namespace Courier
         }
         private double _translationStd = 1;
         public double RotationStd { get; set; } = 1;
+        public double MeasurementSuccessProb { get; set; } = 1;
 
         public NavigationSystem(World world)
         {
@@ -286,21 +287,24 @@ namespace Courier
             });
         }
 
-        public void OnMeasurement(Dictionary<string,double> prediction, int oneTurnDirection)
+        public void OnMeasurement(Dictionary<string,double> prediction, int direction)
         {
             double[] probs = PredictionToProbabilities(prediction);
-            int offset = oneTurnDirection / 90;
+            int offset = direction / 90;
 
             Array.Clear(_tempPdf,0,_tempPdf.Length);
-            for(int i=0;i<_viewMap.Length;i+=4)
+            for(int index=0;index<_viewMap.Length;index+=4)
             {
                 for (int a = 0; a < 4; a++)
                 {
-                    int labelIndex = _viewMap[i + ((a+offset)%4)];
-                    _tempPdf[i+a] = probs[labelIndex] / _labelCount[labelIndex];
+                    int labelIndex = _viewMap[index + ((a + offset) % 4)];
+                    _tempPdf[index + a] += probs[labelIndex] / _labelCount[labelIndex];
                 }
             }
-
+        }
+        public void OnMeasurementCompleted(int count)
+        {
+            MathHelper.Divide(_tempPdf, count);
             ProbabilityHelper.BayesTheorem(_belief, _tempPdf, MinProbability);
             LocalizationUpdated.Invoke(this, new LocalizationEventArgs()
             {
@@ -316,11 +320,15 @@ namespace Courier
             foreach(var item in prediction)
             {
                 int labelIndex = Array.IndexOf(_mapLabels, item.Key);
-                if (labelIndex != -1)
-                    probs[labelIndex] = item.Value;
-                else
-                    probs[0] = item.Value;
+                /* Если нет в словаре статических объектов, значит,
+                 * объект динамический и его точка - пустой квадрат */
+                if (labelIndex == -1)
+                    labelIndex = 0;
+                probs[labelIndex] += item.Value;
             }
+            double uniformProb = 1f / _mapLabels.Length;
+            for (int i = 0; i < _mapLabels.Length; i++)
+                probs[i] = probs[i] * MeasurementSuccessProb + (1 - MeasurementSuccessProb) * uniformProb;
             return probs;
         }
     }

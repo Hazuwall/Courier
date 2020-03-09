@@ -6,49 +6,62 @@ using System.Threading.Tasks;
 
 namespace Courier
 {
-    public static class ActionFactory
+    public class ActionFactory
     {
-        public static ElevatorAction CreateElevatorAction(int relativeFloor, bool exact=true)
+        public ProbabilitySettings Settings { get; set; }
+
+        public ElevateAction CreateElevateAction(int relativeFloor, bool exact=true)
         {
-            return new ElevatorAction()
-            {
-                RelativeFloor = relativeFloor,
-                SuccessProb = exact ? 1 : 0.75
-            };
+            var action = new ElevateAction() { RelativeFloor = relativeFloor };
+            if (exact)
+                action.SuccessProb = 1;
+            else if (Settings != null)
+                action.SuccessProb = Settings.ElevationSuccessProb;
+            return action;
         }
 
-        public static MopAction CreateMopAction()
+        public MopAction CreateMopAction()
         {
             return new MopAction();
         }
 
-        public static TranslationAction CreateTranslationAction(int distance, int direction, bool exact = true)
+        public TranslateAction CreateTranslationAction(int distance, int direction, bool exact = true)
         {
-            var action = new TranslationAction()
+            var action = new TranslateAction()
             {
                 Distance = distance,
-                Direction = direction,
-                Std = exact ? 0.00001 : 0.3,
-                WetnessFactor = 0.1,
-                DistanceFactor = 0.5
+                Direction = direction
             };
+            if(Settings != null)
+            {
+                action.Std = Settings.TranslationStd;
+                action.WetnessFactor = Settings.TranslationWetnessFactor;
+                action.DistanceFactor = Settings.TranslationDistanceFactor;
+            }
+            if (exact)
+                action.Std = 0.00001;
             return action;
         }
 
-        public static RemoveAction CreateRemoveAction()
+        public RemoveAction CreateRemoveAction()
         {
             return new RemoveAction();
         }
 
-        public static RotateAction CreateRotateAction(int angle, bool exact=true)
+        public RotateAction CreateRotateAction(int angle, bool exact=true)
         {
             var action = new RotateAction()
             {
-                Angle = angle,
-                Std = exact? 0.00001 : 0.3,
-                WetnessFactor = 0.1,
-                AngleFactor = 0.5
+                Angle = angle
             };
+            if (Settings != null)
+            {
+                action.Std = Settings.RotationStd;
+                action.WetnessFactor = Settings.RotationWetnessFactor;
+                action.AngleFactor = Settings.RotationAngleFactor;
+            }
+            if (exact)
+                action.Std = 0.00001;
             return action;
         }
     }

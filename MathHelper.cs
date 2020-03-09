@@ -84,6 +84,12 @@ namespace Courier
                     arr[i] = bound;
         }
 
+        public static void Divide(double[] vector, double divider)
+        {
+            for (int i = 0; i < vector.Length; i++)
+                vector[i] /= divider;
+        }
+
         /// <summary>
         /// Круговая одномерная транспонированная свёртка
         /// </summary>

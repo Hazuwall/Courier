@@ -38,13 +38,16 @@ namespace Courier
 
     public class Cleaner : Walker
     {
+        private readonly ActionFactory _factory;
+
         public Cleaner(Camera camera, IStrategy behavior):base(camera, behavior)
         {
+            _factory = new ActionFactory();
         }
 
         public override IEnumerable<IWorldAction> Call()
         {
-            var actions = new List<IWorldAction>() { ActionFactory.CreateMopAction() };
+            var actions = new List<IWorldAction>() { _factory.CreateMopAction() };
             var baseActions = base.Call();
             if (baseActions != null)
                 actions.AddRange(baseActions);

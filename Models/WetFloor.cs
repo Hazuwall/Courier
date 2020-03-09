@@ -20,7 +20,7 @@ namespace Courier
 
         public WetFloor(int wetness)
         {
-            if (_wetness < 0)
+            if (wetness < 0)
                 throw new ArgumentException();
 
             _wetness = wetness;
@@ -29,7 +29,7 @@ namespace Courier
         public override IEnumerable<IWorldAction> Call()
         {
             if (--_wetness <= 0)
-                return new IWorldAction[] { ActionFactory.CreateRemoveAction() };
+                return new IWorldAction[] { new ActionFactory().CreateRemoveAction() };
             else
                 return null;
         }

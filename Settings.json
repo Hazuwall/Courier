@@ -1,0 +1,31 @@
+{
+	"DecideElevateProb": 0.75,
+	"DecideTranslateProb": 0.6,
+	"DecideRotateProb": 0.2,
+
+	"ConfusionMatrix": [
+		[ 0.9, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01 ],
+		[ 0.01, 0.9, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01 ],
+		[ 0.01, 0.01, 0.9, 0.01, 0.01, 0.01, 0.01, 0.01 ],
+		[ 0.01, 0.01, 0.01, 0.9, 0.01, 0.01, 0.01, 0.01 ],
+		[ 0.01, 0.01, 0.01, 0.01, 0.9, 0.01, 0.01, 0.01 ],
+		[ 0.01, 0.01, 0.01, 0.01, 0.01, 0.9, 0.01, 0.01 ],
+		[ 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.9, 0.01 ],
+		[ 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.9 ]
+	],
+	"CameraDeviationStd": 1,
+	"CameraSuccessStd": 0.97,
+
+	"ElevationSuccessProb": 0.75,
+	"TranslationStd": 0.3,
+	"TranslationWetnessFactor": 0.1,
+	"TranslationDistanceFactor": 0.5,
+	"RotationStd": 0.3,
+	"RotationWetnessFactor": 0.1,
+	"RotationAngleFactor": 0.5,
+
+	"EstimatedElevationStd": 0.3,
+	"EstimatedTranslationStd": 0.3,
+	"EstimatedRotationStd": 0.3,
+	"EstimatedCameraSuccessProb": 0.97
+}
