@@ -15,7 +15,6 @@ namespace Courier
         public double DecideRotateProb { get; set; }
 
         public double[,] ConfusionMatrix { get; set; }
-        public double CameraDeviationStd { get; set; }
         public double CameraSuccessStd { get; set; }
 
         public double ElevationSuccessProb { get; set; }

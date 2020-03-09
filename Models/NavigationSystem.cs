@@ -305,7 +305,7 @@ namespace Courier
         public void OnMeasurementCompleted(int count)
         {
             MathHelper.Divide(_tempPdf, count);
-            ProbabilityHelper.BayesTheorem(_belief, _tempPdf, MinProbability);
+            ProbabilityHelper.BayesTheorem(_belief, _tempPdf, MinProbability, _belief);
             LocalizationUpdated.Invoke(this, new LocalizationEventArgs()
             {
                 Belief = _belief

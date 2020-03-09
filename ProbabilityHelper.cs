@@ -110,16 +110,16 @@ namespace Courier
             return Sample(cdf) - cdf.Length /2;
         }
 
-        public static void BayesTheorem(double[] prior, double[] posterior, double lowerBound=0)
+        public static void BayesTheorem(double[] prior, double[] posterior, double lowerBound, double[] output)
         {
             double sum = 0;
             for (int i = 0; i < prior.Length; i++)
             {
                 double prob = prior[i] * posterior[i];
-                prior[i] = prob;
+                output[i] = prob;
                 sum += prob;
             }
-            NormalizePdf(prior, lowerBound, sum);
+            NormalizePdf(output, lowerBound, sum);
         }
 
         public static void NormalizePdf(double[] pdf, double lowerBound)

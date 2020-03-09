@@ -9,34 +9,22 @@ namespace Courier
     public class Camera
     {
         private readonly World _world;
-        private double[] _gaussianCdf;
 
         public int Orientation { get; set; }
         public string[] KnownClasses { get; }
         public double[,] ConfusionMatrix { get; }
-        public double DeviationStd
-        {
-            get { return _deviationStd; }
-            set
-            {
-                _deviationStd = value;
-                _gaussianCdf = ProbabilityHelper.NormalDistribution(0, value, true);
-            }
-        }
-        private double _deviationStd = 1;
         public double SuccessProb { get; set; } = 1;
 
         public Camera(World world, string[] classes, double[,] confusionMatrix)
         {
             _world = world;
-            _gaussianCdf = ProbabilityHelper.NormalDistribution(0, 1, true);
             KnownClasses = classes;
             ConfusionMatrix = confusionMatrix;
         }
 
         public Dictionary<string,double> Measure(ModelBase model, int orientation)
         {
-            double[] distrib = new double[ConfusionMatrix.GetLength(1)];
+            double[] distrib = new double[KnownClasses.Length];
 
             if (new Random().NextDouble() < SuccessProb)
             {
@@ -48,20 +36,13 @@ namespace Courier
                 string seenClass = _world.FindOrDefault(point)?.Model.Class;
                 if (seenClass == null)
                     seenClass = ModelBase.EmptyClassName;
-                int trueClassIndex = Array.IndexOf(KnownClasses, seenClass);
-                if (trueClassIndex == -1)
-                {
-                    seenClass = ModelBase.UnknownClassName;
-                    trueClassIndex = Array.IndexOf(KnownClasses, seenClass);
-                }
 
+                //Превращение точного прогноза в вероятностное
+                int probClassIndex = GetProbabalisticClassIndex(seenClass);
+
+                //Составление распределения вероятности по предполагаемому классу
                 for (int i = 0; i < KnownClasses.Length; i++)
-                {
-                    //Случайное отклонение от матрицы, распределённое по Гауссу
-                    double mean = ConfusionMatrix[trueClassIndex, i];
-                    double dev = 0.1 * (ProbabilityHelper.Sample(_gaussianCdf) - _gaussianCdf.Length / 2);
-                    distrib[i] = Math.Max(mean + dev, 0);
-                }
+                    distrib[i] = ConfusionMatrix[i, probClassIndex];
                 ProbabilityHelper.NormalizePdf(distrib, 0);
             }
             else
@@ -70,10 +51,30 @@ namespace Courier
                 ProbabilityHelper.SetRandomDistribution(distrib);
             }
 
+            //Запись предсказания в словарь
             var prediction = new Dictionary<string, double>();
             for (int i = 0; i < KnownClasses.Length; i++)
                 prediction.Add(KnownClasses[i], distrib[i]);
             return prediction;
+        }
+
+        /// <summary>
+        /// Получить вероятностный индекс класса по распределению из матрицы ошибок
+        /// </summary>
+        /// <param name="trueClassName">Истинное название класса</param>
+        /// <returns></returns>
+        public int GetProbabalisticClassIndex(string trueClassName)
+        {
+            int trueClassIndex = Array.IndexOf(KnownClasses, trueClassName);
+            if (trueClassIndex == -1)
+                trueClassIndex = Array.IndexOf(KnownClasses, ModelBase.UnknownClassName);
+
+            double[] distrib = new double[KnownClasses.Length];
+            for (int i = 0; i < KnownClasses.Length; i++)
+                distrib[i] = ConfusionMatrix[trueClassIndex, i];
+            ProbabilityHelper.NormalizePdf(distrib, 0);
+            ProbabilityHelper.PdfToCdf(distrib);
+            return ProbabilityHelper.Sample(distrib);
         }
     }
 }

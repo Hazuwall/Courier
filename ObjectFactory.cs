@@ -36,7 +36,6 @@ namespace Courier
                 };
                 return _robotCamera = new Camera(world, classes, Settings.ConfusionMatrix)
                 {
-                    DeviationStd = Settings.CameraDeviationStd,
                     SuccessProb = Settings.CameraSuccessStd
                 };
             }
@@ -66,10 +65,7 @@ namespace Courier
                 { 1, 0 },
                 { 0, 1 }
             };
-            return _walkerCamera = new Camera(world, classes, confusion)
-            {
-                DeviationStd = 0.0001
-            };
+            return _walkerCamera = new Camera(world, classes, confusion);
         }
 
         public WorldObject CreatePersonObj(Point point)
