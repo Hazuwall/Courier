@@ -1,3 +1,19 @@
+/*
+	M - Person,
+	W - Walker,
+	C - Cleaner,
+	R - Robot
+
+	c - Cooler,
+	d - Desk,
+	e - Elevator,
+	p - Plant,
+	s - Sofa,
+	w - Wall,
+	f - Window,
+	space - Empty
+*/
+
 [
 	[
 		[ "w", "w", "w", "w", "e", "e", "w", "w", "w" ],

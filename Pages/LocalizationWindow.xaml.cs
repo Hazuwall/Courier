@@ -23,8 +23,11 @@ namespace Courier
             InitializeComponent();
             DataContext = viewModel;
 
-            double size = viewModel.CanvasSize / viewModel.WorldShape[0];
-            AddLocalizationIndicators(viewModel.LocalizationIndicators, viewModel.WorldShape[0], viewModel.WorldShape[1], size);
+            if (viewModel.WorldShape != null)
+            {
+                double size = viewModel.CanvasSize / viewModel.WorldShape[0];
+                AddLocalizationIndicators(viewModel.LocalizationIndicators, viewModel.WorldShape[0], viewModel.WorldShape[1], size);
+            }
         }
 
         private static void AddLocalizationIndicators(ICollection<UIElement> collection, int horizontalCoumt, int verticalCount, double size)

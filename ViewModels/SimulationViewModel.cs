@@ -66,7 +66,6 @@ namespace Courier
                 _floor = 0;
 
                 UpdateFloorObjects(_floor);
-                UpdateLocalizationIndicators(_floor);
                 StartSimulationWrapper();
                 CommandManager.InvalidateRequerySuggested();
             }, p =>
