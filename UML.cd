@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Courier.WorldObject">
+    <Position X="2.5" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAoAAAAAEAAAEAAAABAAAAAAgAAAEAAAQ=</HashCode>
+      <FileName>Models\WorldObject.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Model" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ModelBase">
+    <Position X="6.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAgAAAAAAAAAACIAAAAIAAAAgAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Models\ModelBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Courier.Robot" Collapsed="true">
+    <Position X="8" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAIAAAAgCAIAAAAIAAAAgAAAAAAAACIAAAA=</HashCode>
+      <FileName>Models\Robot.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Courier.StaticModel" Collapsed="true">
+    <Position X="8" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAEAAAAAAgAAAAAAIgIAAIAAAAgAAQABAQAAIAAAA=</HashCode>
+      <FileName>Models\StaticModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Courier.Person" Collapsed="true">
+    <Position X="5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAIAAAAIAAAAgAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Models\Person.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Courier.Walker" Collapsed="true">
+    <Position X="5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAACIAAAA=</HashCode>
+      <FileName>Models\Person.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Courier.Cleaner" Collapsed="true">
+    <Position X="5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>Models\Person.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

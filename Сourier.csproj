@@ -135,6 +135,7 @@
     <None Include="Settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="UML.cd" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
