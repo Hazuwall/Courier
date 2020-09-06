@@ -13,7 +13,7 @@ namespace Courier
 {
     public class SimulationViewModel
     {
-        private Simulation _simulation = null;
+        private Engine _simulation = null;
         private volatile bool _isSimulating = false;
         private CancellationTokenSource _stopSimSource = null;
         private int _floor = 0;
@@ -62,7 +62,7 @@ namespace Courier
                     
                     _localizationWindow?.Close();
                 }
-                _simulation = new Simulation(world);
+                _simulation = new Engine(world);
                 _floor = 0;
 
                 UpdateFloorObjects(_floor);

@@ -8,12 +8,12 @@ using System.Windows.Controls;
 
 namespace Courier
 {
-    public class Simulation
+    public class Engine
     {
         public World World { get; }
         public int DelayTime { get; set; } = 1000;
 
-        public Simulation(World world)
+        public Engine(World world)
         {
             World = world;
         }

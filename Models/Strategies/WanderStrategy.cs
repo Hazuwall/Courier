@@ -6,10 +6,6 @@ using System.Threading.Tasks;
 
 namespace Courier
 {
-    public interface IStrategy{
-        IWorldAction GetAction(bool isClear, bool isElevator);
-    }
-
     public class WanderStrategy : IStrategy
     {
         private readonly Random _random;

@@ -64,31 +64,36 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ActionFactory.cs" />
-    <Compile Include="DataModels\ProbabilitySettings.cs" />
-    <Compile Include="DrawingHelper.cs" />
+    <Compile Include="Models\Actions\ActionFactory.cs" />
+    <Compile Include="Models\Actions\ElevateAction.cs" />
+    <Compile Include="Models\Actions\MopAction.cs" />
+    <Compile Include="Models\Actions\RotateAction.cs" />
+    <Compile Include="Models\Actions\RemoveAction.cs" />
+    <Compile Include="Models\Actions\TranslateAction.cs" />
+    <Compile Include="Models\ProbabilitySettings.cs" />
+    <Compile Include="Models\Strategies\WanderStrategy.cs" />
     <Compile Include="ViewModels\RelayCommand.cs" />
     <Compile Include="ViewModels\SimulationViewModel.cs" />
-    <Compile Include="Strategy.cs" />
-    <Compile Include="MathHelper.cs" />
-    <Compile Include="ObjectFactory.cs" />
-    <Compile Include="ProbabilityHelper.cs" />
+    <Compile Include="Models\Strategies\IStrategy.cs" />
+    <Compile Include="Helpers\MathHelper.cs" />
+    <Compile Include="Models\Objects\ObjectFactory.cs" />
+    <Compile Include="Helpers\ProbabilityHelper.cs" />
     <Compile Include="Pages\LocalizationWindow.xaml.cs">
       <DependentUpon>LocalizationWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\StaticModel.cs" />
-    <Compile Include="WorldAction.cs" />
+    <Compile Include="Models\Objects\StaticModel.cs" />
+    <Compile Include="Models\Actions\IWorldAction.cs" />
     <Compile Include="Models\Camera.cs" />
     <Compile Include="Models\NavigationSystem.cs" />
-    <Compile Include="Models\Person.cs" />
-    <Compile Include="DataModels\Point.cs" />
-    <Compile Include="Models\Robot.cs" />
-    <Compile Include="Simulation.cs" />
-    <Compile Include="Models\WetFloor.cs" />
+    <Compile Include="Models\Objects\Person.cs" />
+    <Compile Include="Models\Point.cs" />
+    <Compile Include="Models\Objects\Robot.cs" />
+    <Compile Include="Models\Engine.cs" />
+    <Compile Include="Models\Objects\WetFloor.cs" />
     <Compile Include="Models\World.cs" />
-    <Compile Include="Models\ModelBase.cs" />
-    <Compile Include="WorldGenerator.cs" />
-    <Compile Include="Models\WorldObject.cs" />
+    <Compile Include="Models\Objects\ModelBase.cs" />
+    <Compile Include="Models\WorldGenerator.cs" />
+    <Compile Include="Models\Objects\WorldObject.cs" />
     <Page Include="Pages\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -187,5 +192,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

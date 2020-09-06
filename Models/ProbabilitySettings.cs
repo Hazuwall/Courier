@@ -33,7 +33,7 @@ namespace Courier
         public static ProbabilitySettings ParseFromJson(string path)
         {
             string rawJson = File.ReadAllText(path);
-            return (ProbabilitySettings)JsonConvert.DeserializeObject(rawJson, typeof(ProbabilitySettings));
+            return JsonConvert.DeserializeObject<ProbabilitySettings>(rawJson);
         }
     }
 }
