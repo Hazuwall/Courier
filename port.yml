@@ -1,0 +1,6 @@
+- identifier: courier
+  title: courier
+  team: []
+  icon: DefaultBlueprint
+  blueprint: service
+  properties: {}
